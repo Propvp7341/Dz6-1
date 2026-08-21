@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ДЗ 6-1 (тест)</title>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <style>
+        body { font-family: Arial; padding: 20px; max-width: 600px; margin: auto; }
+        input, textarea, button { width: 100%; margin: 5px 0; padding: 8px; }
+        button { background: #1a73e8; color: white; border: none; cursor: pointer; }
+        .task { background: #f0f0f0; padding: 10px; margin: 5px 0; border-radius: 8px; }
+    </style>
+</head>
+<body>
+    <h1>📚 ДЗ 6-1 (тест)</h1>
+    <div id="status">Подключение к Firebase...</div>
+
+    <h3>Добавить задание</h3>
+    <input type="text" id="subject" placeholder="Предмет">
+    <textarea id="text" placeholder="Описание"></textarea>
+    <input type="date" id="date">
+    <input type="text" id="author" placeholder="Автор">
+    <button id="addBtn">➕ Добавить</button>
+
+    <h3>Список заданий</h3>
+    <div id="taskList"></div>
+
+    <script>
+        // ---------- КОНФИГ FIREBASE (твой) ----------
+        const firebaseConfig = {
+            apiKey: "AIzaSyB55xY6dYAaysFfZeeJCWUGWDkMOuApFO",
+            authDomain: "dz-6-1.firebaseapp.com",
+            databaseURL: "https://dz-6-1-default-rtdb.firebaseio.com",
+            projectId: "dz-6-1",
+            storageBucket: "dz-6-1.firebasestorage.app",
+            messagingSenderId: "338642525342",
+            appId: "1:338642525342:web:bdf14ac6874ebf49dbfa5"
+        };
+
+        // ---------- ИНИЦИАЛИЗАЦИЯ ----------
+        let app;
+        try {
+            app = firebase.initializeApp(firebaseConfig);
+            document.getElementById('status').innerHTML = '✅ Firebase подключён';
+            console.log('Firebase OK');
+        } catch (e) {
+            document.getElementById('status').innerHTML = '❌ Ошибка: ' + e.message;
+            console.error('Firebase error:', e);
+        }
+
+        const database = firebase.database();
+        const tasksRef = database.ref('tasks');
+
+        // ---------- ТЕЛЕГРАМ (опционально, для теста) ----------
+        const BOT_TOKEN = '8274411877:AAE94dt9DOFLXxuer5XSCpch3sZzNkj61UM';
+        const CHAT_ID = '-1002883795807';
+
+        function sendTelegram(message) {
+            const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+            fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: CHAT_ID, text: message, parse_mode: 'HTML' })
+            }).catch(e => console.warn('Telegram error:', e));
+        }
+
+        // ---------- ЗАГРУЗКА ЗАДАНИЙ ----------
+        tasksRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            const list = document.getElementById('taskList');
+            list.innerHTML = '';
+            if (data) {
+                const entries = Object.entries(data);
+                entries.forEach(([id, task]) => {
+                    const div = document.createElement('div');
+                    div.className = 'task';
+                    div.innerHTML = `
+                        <strong>${task.subject || 'Без предмета'}</strong><br>
+                        ${task.text || ''}<br>
+                        <small>Автор: ${task.author || 'Аноним'} · Дата: ${task.date || ''}</small>
+                        <button onclick="deleteTask('${id}')">🗑️ Удалить</button>
+                    `;
+                    list.appendChild(div);
+                });
+            } else {
+                list.innerHTML = '<p>Заданий пока нет</p>';
+            }
+        });
+
+        // ---------- ДОБАВЛЕНИЕ ----------
+        document.getElementById('addBtn').addEventListener('click', function() {
+            const subject = document.getElementById('subject').value.trim();
+            const text = document.getElementById('text').value.trim();
+            const date = document.getElementById('date').value;
+            const author = document.getElementById('author').value.trim() || 'Аноним';
+
+            if (!subject || !text || !date) {
+                alert('Заполните предмет, описание и дату');
+                return;
+            }
+
+            const task = { subject, text, date, author, timestamp: Date.now() };
+            tasksRef.push().set(task)
+                .then(() => {
+                    // Очистка полей
+                    document.getElementById('subject').value = '';
+                    document.getElementById('text').value = '';
+                    document.getElementById('date').value = '';
+                    document.getElementById('author').value = '';
+                    // Отправка в Telegram
+                    const msg = `📚 Новое задание в 6-1!\nПредмет: ${subject}\nЗадание: ${text}\nАвтор: ${author}\nДата: ${date}`;
+                    sendTelegram(msg);
+                })
+                .catch(err => alert('Ошибка сохранения: ' + err.message));
+        });
+
+        // ---------- УДАЛЕНИЕ (глобальная функция) ----------
+        window.deleteTask = function(id) {
+            if (confirm('Удалить задание?')) {
+                tasksRef.child(id).remove()
+                    .catch(err => alert('Ошибка удаления: ' + err.message));
+            }
+        };
+
+        // Проверка, что скрипт загружен
+        console.log('Скрипт загружен');
+    </script>
+</body>
+</html>
