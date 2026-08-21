@@ -1,828 +1,132 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-  <title>ДЗ · 6-1</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz@14..32&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <!-- Firebase SDK (compat) -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-
-  <style>
-    /* ----- все стили как в предыдущей версии (без изменений) ----- */
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
-      background: #f5f7fc;
-      color: #1a1a2e;
-      transition: background 0.2s, color 0.2s;
-      padding: 1rem;
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-    }
-    body.dark {
-      background: #12121a;
-      color: #eaeef5;
-    }
-    body.dark .card {
-      background: #1e1e2e;
-      border-color: #2e2e44;
-    }
-    body.dark .card:hover { border-color: #3a4a8c; }
-    body.dark .filter-bar {
-      background: #1a1a2a;
-      border-color: #2e2e44;
-    }
-    body.dark .filter-bar select,
-    body.dark .filter-bar input {
-      background: #2a2a3e;
-      color: #eaeef5;
-      border-color: #3a3a5a;
-    }
-    body.dark .btn-outline {
-      border-color: #3a3a5a;
-      color: #b0b8d0;
-    }
-    body.dark .btn-outline:hover { background: #2a2a3e; }
-    body.dark .modal-content {
-      background: #1a1a2a;
-      border-color: #2e2e44;
-    }
-    body.dark .modal-content input,
-    body.dark .modal-content textarea,
-    body.dark .modal-content select {
-      background: #2a2a3e;
-      color: #eaeef5;
-      border-color: #3a3a5a;
-    }
-    body.dark .task-date {
-      background: #2a2a40;
-      color: #b0b8d0;
-    }
-    body.dark .task-date.overdue {
-      background: #3a1a1a;
-      color: #ff9a9a;
-    }
-    body.dark .task-subject {
-      background: #2a2a44;
-      color: #b8c8ff;
-    }
-    body.dark .task-attachment {
-      background: #1a1a30;
-      border-color: #2a3a5a;
-    }
-    body.dark .task-footer {
-      border-top-color: #2a2a40;
-    }
-    body.dark .avatar {
-      background: #2a2a4a;
-      color: #b8c8ff;
-    }
-    body.dark .stat-item {
-      background: #1a1a2a;
-      color: #b0b8d0;
-    }
-    body.dark .empty-state i {
-      color: #3a3a5a;
-    }
-    body.dark .settings-panel {
-      background: #1a1a2a;
-      border-color: #2e2e44;
-    }
-    .container {
-      max-width: 820px;
-      width: 100%;
-    }
-    .app-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 0.8rem;
-      margin-bottom: 1.5rem;
-      padding-bottom: 0.8rem;
-      border-bottom: 1px solid #dce0e8;
-    }
-    body.dark .app-header {
-      border-bottom-color: #2a2a40;
-    }
-    .app-header h1 {
-      font-weight: 600;
-      font-size: 1.8rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    .app-header h1 i { color: #1a73e8; }
-    .header-actions {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-    }
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      padding: 0.45rem 1.2rem;
-      border-radius: 40px;
-      border: 1px solid #c0c8d8;
-      background: transparent;
-      font-weight: 500;
-      font-size: 0.9rem;
-      cursor: pointer;
-      transition: 0.15s;
-      font-family: inherit;
-      color: #1a1a2e;
-      text-decoration: none;
-    }
-    body.dark .btn {
-      color: #eaeef5;
-      border-color: #3a4a6a;
-    }
-    .btn-primary {
-      background: #1a73e8;
-      border-color: #1a73e8;
-      color: #fff;
-    }
-    .btn-primary:hover {
-      background: #1557b0;
-      border-color: #1557b0;
-    }
-    .btn-outline {
-      background: transparent;
-    }
-    .btn-outline:hover {
-      background: #e8edf5;
-    }
-    body.dark .btn-outline:hover {
-      background: #2a2a40;
-    }
-    .btn-danger {
-      color: #d43f3f;
-      border-color: #d43f3f;
-    }
-    .btn-danger:hover {
-      background: #fce8e8;
-    }
-    body.dark .btn-danger {
-      color: #ff7a7a;
-      border-color: #6a2a2a;
-    }
-    body.dark .btn-danger:hover {
-      background: #2a1a1a;
-    }
-    .btn-sm {
-      padding: 0.2rem 0.8rem;
-      font-size: 0.75rem;
-    }
-    .btn-icon {
-      padding: 0.4rem 0.7rem;
-      font-size: 1rem;
-    }
-    .theme-toggle {
-      background: none;
-      border: none;
-      font-size: 1.4rem;
-      cursor: pointer;
-      color: inherit;
-      padding: 0.2rem 0.5rem;
-    }
-    .admin-btn {
-      border-color: #f0b400;
-      color: #b8860b;
-    }
-    body.dark .admin-btn {
-      border-color: #f0b400;
-      color: #f0b400;
-    }
-    .admin-btn.active {
-      background: #f0b400;
-      color: #1a1a2e;
-      border-color: #f0b400;
-    }
-    body.dark .admin-btn.active {
-      background: #f0b400;
-      color: #1a1a2e;
-    }
-    .stat-item {
-      background: #eef2f8;
-      padding: 0.2rem 0.9rem;
-      border-radius: 40px;
-      font-size: 0.8rem;
-      color: #2a2a4a;
-    }
-    body.dark .stat-item {
-      background: #1a1a2a;
-      color: #b0b8d0;
-    }
-    .filter-bar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem 1rem;
-      background: #fff;
-      padding: 0.6rem 1.2rem;
-      border-radius: 60px;
-      border: 1px solid #dce0e8;
-      margin-bottom: 1.5rem;
-      align-items: center;
-      transition: background 0.2s, border-color 0.2s;
-    }
-    .filter-bar label {
-      display: flex;
-      align-items: center;
-      gap: 0.3rem;
-      font-size: 0.8rem;
-      font-weight: 500;
-      color: #3a3a5a;
-    }
-    body.dark .filter-bar label {
-      color: #b0b8d0;
-    }
-    .filter-bar select {
-      border: 1px solid #d0d8e8;
-      border-radius: 40px;
-      padding: 0.2rem 0.8rem;
-      font-size: 0.8rem;
-      background: #f8faff;
-      font-family: inherit;
-      outline: none;
-    }
-    .filter-bar .filter-reset {
-      margin-left: auto;
-      font-size: 0.75rem;
-      color: #6a7a9a;
-      cursor: pointer;
-      border-bottom: 1px dashed #b0b8d0;
-    }
-    .filter-bar .filter-reset:hover {
-      color: #1a73e8;
-    }
-    .task-list {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-    .card {
-      background: #fff;
-      border-radius: 24px;
-      padding: 1.2rem 1.5rem;
-      border: 1px solid #e0e6f0;
-      transition: 0.2s ease;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.02);
-    }
-    .card:hover {
-      border-color: #b0c8f0;
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(0,0,0,0.04);
-    }
-    .card.done {
-      opacity: 0.6;
-    }
-    .card.done .task-text {
-      text-decoration: line-through;
-    }
-    .task-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 0.4rem;
-    }
-    .task-subject {
-      font-weight: 600;
-      background: #eef4ff;
-      padding: 0.1rem 0.9rem;
-      border-radius: 40px;
-      color: #1a5bb0;
-      font-size: 0.85rem;
-    }
-    body.dark .task-subject {
-      background: #1a2a4a;
-      color: #8ab4ff;
-    }
-    .task-date {
-      font-size: 0.75rem;
-      background: #eef2f8;
-      padding: 0.1rem 0.8rem;
-      border-radius: 30px;
-      color: #3a4a6a;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.3rem;
-    }
-    .task-date.overdue {
-      background: #ffebeb;
-      color: #b52a2a;
-    }
-    body.dark .task-date.overdue {
-      background: #3a1a1a;
-      color: #ff9a9a;
-    }
-    .task-text {
-      margin: 0.6rem 0 0.6rem;
-      font-size: 0.95rem;
-      line-height: 1.5;
-      word-break: break-word;
-    }
-    .task-attachment {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin: 0.3rem 0 0.6rem;
-      font-size: 0.8rem;
-      background: #f4f8ff;
-      padding: 0.2rem 0.9rem;
-      border-radius: 40px;
-      border: 1px solid #d0dcf0;
-      width: fit-content;
-    }
-    body.dark .task-attachment {
-      background: #1a1a30;
-      border-color: #2a3a5a;
-    }
-    .task-attachment img {
-      max-height: 120px;
-      border-radius: 12px;
-      margin: 0.3rem 0;
-      border: 1px solid #d0d8e8;
-    }
-    .task-attachment a {
-      color: #1a73e8;
-      text-decoration: none;
-      border-bottom: 1px dashed #a0b8e0;
-    }
-    .task-footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      margin-top: 0.6rem;
-      padding-top: 0.6rem;
-      border-top: 1px solid #e8ecf4;
-    }
-    body.dark .task-footer {
-      border-top-color: #2a2a40;
-    }
-    .author-block {
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-    }
-    .avatar {
-      width: 32px;
-      height: 32px;
-      border-radius: 40px;
-      background: #dce4f0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 600;
-      font-size: 0.7rem;
-      color: #1a2a4a;
-      text-transform: uppercase;
-    }
-    body.dark .avatar {
-      background: #2a2a4a;
-      color: #b8c8ff;
-    }
-    .author-name {
-      font-weight: 500;
-      font-size: 0.9rem;
-    }
-    .author-time {
-      font-size: 0.7rem;
-      color: #6a7a9a;
-    }
-    body.dark .author-time {
-      color: #8a8aa0;
-    }
-    .task-actions {
-      display: flex;
-      gap: 0.3rem;
-    }
-    .like-btn {
-      background: none;
-      border: none;
-      font-size: 1.2rem;
-      cursor: pointer;
-      color: #8a9ab8;
-      transition: 0.15s;
-      display: flex;
-      align-items: center;
-      gap: 0.2rem;
-    }
-    .like-btn.liked {
-      color: #e84a5f;
-    }
-    .like-btn .like-count {
-      font-size: 0.75rem;
-      font-weight: 500;
-      color: #5a6a8a;
-    }
-    body.dark .like-btn .like-count {
-      color: #8a8aa0;
-    }
-    .like-btn:hover {
-      transform: scale(1.1);
-    }
-    .modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.3);
-      backdrop-filter: blur(3px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      opacity: 0;
-      visibility: hidden;
-      transition: 0.2s;
-    }
-    .modal-overlay.active {
-      opacity: 1;
-      visibility: visible;
-    }
-    .modal-content {
-      background: #fff;
-      border-radius: 32px;
-      max-width: 520px;
-      width: 90%;
-      padding: 2rem 1.8rem;
-      border: 1px solid #e0e6f0;
-      transform: scale(0.95);
-      transition: 0.2s;
-      max-height: 90vh;
-      overflow-y: auto;
-    }
-    .modal-overlay.active .modal-content {
-      transform: scale(1);
-    }
-    .modal-content h2 {
-      font-weight: 600;
-      font-size: 1.4rem;
-      margin-bottom: 1.2rem;
-    }
-    .form-group {
-      margin-bottom: 1rem;
-    }
-    .form-group label {
-      display: block;
-      font-weight: 500;
-      font-size: 0.8rem;
-      margin-bottom: 0.2rem;
-      color: #3a4a6a;
-    }
-    body.dark .form-group label {
-      color: #b0b8d0;
-    }
-    .form-group input,
-    .form-group textarea,
-    .form-group select {
-      width: 100%;
-      padding: 0.6rem 1rem;
-      border: 1px solid #d0d8e8;
-      border-radius: 60px;
-      font-size: 0.9rem;
-      background: #f8faff;
-      font-family: inherit;
-      outline: none;
-      transition: 0.1s;
-    }
-    .form-group textarea {
-      border-radius: 20px;
-      min-height: 70px;
-      resize: vertical;
-    }
-    .form-group input:focus,
-    .form-group textarea:focus,
-    .form-group select:focus {
-      border-color: #1a73e8;
-    }
-    .form-row {
-      display: flex;
-      gap: 1rem;
-      flex-wrap: wrap;
-    }
-    .form-row .form-group {
-      flex: 1 1 140px;
-    }
-    .modal-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 0.8rem;
-      margin-top: 1.5rem;
-    }
-    .empty-state {
-      text-align: center;
-      padding: 3rem 1rem;
-      color: #6a7a9a;
-    }
-    .empty-state i {
-      font-size: 3rem;
-      color: #c0c8d8;
-      margin-bottom: 0.5rem;
-    }
-    .empty-state .btn {
-      margin-top: 0.8rem;
-    }
-    .footer {
-      margin-top: 2.5rem;
-      text-align: center;
-      font-size: 0.7rem;
-      color: #8a9ab8;
-      border-top: 1px solid #e0e6f0;
-      padding-top: 1rem;
-    }
-    body.dark .footer {
-      border-top-color: #2a2a40;
-      color: #6a7a9a;
-    }
-    @media (max-width: 600px) {
-      body { padding: 0.8rem; }
-      .app-header h1 { font-size: 1.4rem; }
-      .filter-bar { border-radius: 20px; padding: 0.6rem; }
-      .filter-bar label { width: 100%; }
-      .filter-bar .filter-reset { margin-left: 0; }
-      .card { padding: 1rem; }
-      .modal-content { padding: 1.5rem; }
-      .task-footer { flex-direction: column; align-items: stretch; gap: 0.5rem; }
-      .task-actions { justify-content: flex-end; }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ДЗ 6-1 (тест)</title>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <style>
+        body { font-family: Arial; padding: 20px; max-width: 600px; margin: auto; }
+        input, textarea, button { width: 100%; margin: 5px 0; padding: 8px; }
+        button { background: #1a73e8; color: white; border: none; cursor: pointer; }
+        .task { background: #f0f0f0; padding: 10px; margin: 5px 0; border-radius: 8px; }
+    </style>
 </head>
 <body>
-<div class="container">
-  <header class="app-header">
-    <h1><i class="fas fa-home"></i> 6-1 · ДЗ</h1>
-    <div class="header-actions">
-      <span class="stat-item" id="taskCount">0</span>
-      <button class="btn btn-primary" id="addBtn"><i class="fas fa-plus"></i> Добавить</button>
-      <button class="btn btn-outline btn-sm admin-btn" id="adminBtn"><i class="fas fa-lock"></i> <span id="adminLabel">Админ</span></button>
-      <button class="theme-toggle" id="themeToggle" aria-label="Тема"><i class="fas fa-moon"></i></button>
-    </div>
-  </header>
+    <h1>📚 ДЗ 6-1 (тест)</h1>
+    <div id="status">Подключение к Firebase...</div>
 
-  <div class="filter-bar">
-    <label><i class="fas fa-calendar-day"></i> День
-      <select id="dayFilter">
-        <option value="all">Все</option>
-        <option value="today">Сегодня</option>
-        <option value="tomorrow">Завтра</option>
-        <option value="week">Неделя</option>
-      </select>
-    </label>
-    <label><i class="fas fa-tag"></i> Предмет
-      <select id="subjectFilter">
-        <option value="all">Все</option>
-        <option value="Математика">Математика</option>
-        <option value="Физика">Физика</option>
-        <option value="Литература">Литература</option>
-        <option value="Информатика">Информатика</option>
-        <option value="Русский язык">Русский язык</option>
-        <option value="Английский язык">Английский язык</option>
-        <option value="Химия">Химия</option>
-        <option value="Биология">Биология</option>
-        <option value="История">История</option>
-        <option value="Обществознание">Обществознание</option>
-        <option value="География">География</option>
-        <option value="Другое">Другое</option>
-      </select>
-    </label>
-    <span class="filter-reset" id="resetFilters"><i class="fas fa-undo-alt"></i> Сбросить</span>
-  </div>
+    <h3>Добавить задание</h3>
+    <input type="text" id="subject" placeholder="Предмет">
+    <textarea id="text" placeholder="Описание"></textarea>
+    <input type="date" id="date">
+    <input type="text" id="author" placeholder="Автор">
+    <button id="addBtn">➕ Добавить</button>
 
-  <div class="task-list" id="taskList"></div>
+    <h3>Список заданий</h3>
+    <div id="taskList"></div>
 
-  <div class="footer">
-    <i class="fas fa-database"></i> Данные в облаке · <span id="footerCount">0</span> заданий
-  </div>
-</div>
+    <script>
+        // ---------- КОНФИГ FIREBASE (твой) ----------
+        const firebaseConfig = {
+            apiKey: "AIzaSyB55xY6dYAaysFfZeeJCWUGWDkMOuApFO",
+            authDomain: "dz-6-1.firebaseapp.com",
+            databaseURL: "https://dz-6-1-default-rtdb.firebaseio.com",
+            projectId: "dz-6-1",
+            storageBucket: "dz-6-1.firebasestorage.app",
+            messagingSenderId: "338642525342",
+            appId: "1:338642525342:web:bdf14ac6874ebf49dbfa5"
+        };
 
-<!-- модалка -->
-<div class="modal-overlay" id="taskModal">
-  <div class="modal-content">
-    <h2 id="modalTitle">Новое задание</h2>
-    <form id="taskForm">
-      <div class="form-group">
-        <label>Предмет</label>
-        <input type="text" id="formSubject" placeholder="Например, Математика" list="subjectList" required>
-        <datalist id="subjectList">
-          <option value="Математика"><option value="Физика"><option value="Литература">
-          <option value="Информатика"><option value="Русский язык"><option value="Английский язык">
-          <option value="Химия"><option value="Биология"><option value="История">
-          <option value="Обществознание"><option value="География"><option value="Другое">
-        </datalist>
-      </div>
-      <div class="form-group">
-        <label>Описание</label>
-        <textarea id="formText" placeholder="Что нужно сделать?" required></textarea>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Дата выполнения</label>
-          <input type="date" id="formDate" required>
-        </div>
-        <div class="form-group">
-          <label>Автор</label>
-          <input type="text" id="formAuthor" placeholder="Ваше имя" required>
-        </div>
-      </div>
-      <div class="form-group">
-        <label>Ссылка на фото (необязательно)</label>
-        <input type="text" id="formAttachment" placeholder="https://...">
-      </div>
-      <input type="hidden" id="editId" value="">
-      <div class="modal-actions">
-        <button type="button" class="btn btn-outline" id="cancelModal">Отмена</button>
-        <button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> Сохранить</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<script>
-  (function() {
-    'use strict';
-
-    // ---------- КОРРЕКТНЫЙ КОНФИГ FIREBASE (без опечаток) ----------
-    const firebaseConfig = {
-      apiKey: "AIzaSyB55xY6dYAaysFfZeeJCWUGWDkMOuApFO",   // буква a после AIz
-      authDomain: "dz-6-1.firebaseapp.com",
-      databaseURL: "https://dz-6-1-default-rtdb.firebaseio.com",
-      projectId: "dz-6-1",
-      storageBucket: "dz-6-1.firebasestorage.app",
-      messagingSenderId: "338642525342",
-      appId: "1:338642525342:web:bdf14ac6874ebf49dbfa5"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
-    const tasksRef = database.ref('tasks');
-
-    // ---------- ДАННЫЕ ТЕЛЕГРАМ (зашиты) ----------
-    const BOT_TOKEN = '8274411877:AAE94dt9DOFLXxuer5XSCpch3sZzNkj61UM';
-    const CHAT_ID = '-1002883795807';
-
-    // ---------- ПЕРЕМЕННЫЕ ----------
-    let tasks = [];
-    let editingId = null;
-    let currentUser = '';
-    let isAdmin = false;
-    const ADMIN_PASSWORD = 'tl132435534231t';
-
-    // DOM
-    const taskListEl = document.getElementById('taskList');
-    const taskCountEl = document.getElementById('taskCount');
-    const footerCountEl = document.getElementById('footerCount');
-    const modalOverlay = document.getElementById('taskModal');
-    const modalTitle = document.getElementById('modalTitle');
-    const taskForm = document.getElementById('taskForm');
-    const formSubject = document.getElementById('formSubject');
-    const formText = document.getElementById('formText');
-    const formDate = document.getElementById('formDate');
-    const formAuthor = document.getElementById('formAuthor');
-    const formAttachment = document.getElementById('formAttachment');
-    const editIdInput = document.getElementById('editId');
-    const cancelModalBtn = document.getElementById('cancelModal');
-    const addBtn = document.getElementById('addBtn');
-    const dayFilter = document.getElementById('dayFilter');
-    const subjectFilter = document.getElementById('subjectFilter');
-    const resetFiltersBtn = document.getElementById('resetFilters');
-    const adminBtn = document.getElementById('adminBtn');
-    const adminLabel = document.getElementById('adminLabel');
-    const themeToggle = document.getElementById('themeToggle');
-
-    // ---------- ЗАГРУЗКА ИМЕНИ ПОЛЬЗОВАТЕЛЯ ----------
-    function loadUserName() {
-      const saved = localStorage.getItem('hw6_userName');
-      if (saved) {
-        currentUser = saved;
-      } else {
-        const name = prompt('Введите ваше имя (оно будет показано как автор заданий):', '');
-        if (name && name.trim()) {
-          currentUser = name.trim();
-          localStorage.setItem('hw6_userName', currentUser);
-        } else {
-          currentUser = 'Аноним';
+        // ---------- ИНИЦИАЛИЗАЦИЯ ----------
+        let app;
+        try {
+            app = firebase.initializeApp(firebaseConfig);
+            document.getElementById('status').innerHTML = '✅ Firebase подключён';
+            console.log('Firebase OK');
+        } catch (e) {
+            document.getElementById('status').innerHTML = '❌ Ошибка: ' + e.message;
+            console.error('Firebase error:', e);
         }
-      }
-      formAuthor.value = currentUser;
-    }
 
-    // ---------- АДМИН ----------
-    function toggleAdmin() {
-      if (isAdmin) {
-        isAdmin = false;
-        sessionStorage.removeItem('hw6_admin');
-        updateAdminUI();
-        render();
-        return;
-      }
-      const pass = prompt('Введите пароль админа:');
-      if (pass === ADMIN_PASSWORD) {
-        isAdmin = true;
-        sessionStorage.setItem('hw6_admin', 'true');
-        updateAdminUI();
-        render();
-      } else if (pass !== null) {
-        alert('Неверный пароль!');
-      }
-    }
+        const database = firebase.database();
+        const tasksRef = database.ref('tasks');
 
-    function updateAdminUI() {
-      if (isAdmin) {
-        adminBtn.classList.add('active');
-        adminLabel.textContent = 'Админ (вкл)';
-      } else {
-        adminBtn.classList.remove('active');
-        adminLabel.textContent = 'Админ';
-      }
-    }
+        // ---------- ТЕЛЕГРАМ (опционально, для теста) ----------
+        const BOT_TOKEN = '8274411877:AAE94dt9DOFLXxuer5XSCpch3sZzNkj61UM';
+        const CHAT_ID = '-1002883795807';
 
-    // ---------- ТЕМА ----------
-    function loadTheme() {
-      const dark = localStorage.getItem('hw6_theme') === 'dark';
-      document.body.classList.toggle('dark', dark);
-      themeToggle.innerHTML = dark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
-    }
-    function toggleTheme() {
-      const dark = document.body.classList.toggle('dark');
-      localStorage.setItem('hw6_theme', dark ? 'dark' : 'light');
-      themeToggle.innerHTML = dark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
-    }
-    themeToggle.addEventListener('click', toggleTheme);
-
-    // ---------- ЗАГРУЗКА ЗАДАНИЙ ИЗ FIREBASE ----------
-    function loadTasks() {
-      tasksRef.on('value', (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-          tasks = Object.entries(data).map(([key, value]) => {
-            return { id: key, ...value };
-          });
-        } else {
-          tasks = [];
+        function sendTelegram(message) {
+            const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+            fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: CHAT_ID, text: message, parse_mode: 'HTML' })
+            }).catch(e => console.warn('Telegram error:', e));
         }
-        render();
-      }, (error) => {
-        console.error('Ошибка загрузки:', error);
-        alert('Не удалось загрузить данные из Firebase. Проверьте конфиг и правила базы.');
-      });
-    }
 
-    // ---------- CRUD ----------
-    function addTask(task) {
-      return tasksRef.push().set(task);
-    }
-    function updateTask(id, updated) {
-      return tasksRef.child(id).update(updated);
-    }
-    function deleteTask(id) {
-      return tasksRef.child(id).remove();
-    }
+        // ---------- ЗАГРУЗКА ЗАДАНИЙ ----------
+        tasksRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            const list = document.getElementById('taskList');
+            list.innerHTML = '';
+            if (data) {
+                const entries = Object.entries(data);
+                entries.forEach(([id, task]) => {
+                    const div = document.createElement('div');
+                    div.className = 'task';
+                    div.innerHTML = `
+                        <strong>${task.subject || 'Без предмета'}</strong><br>
+                        ${task.text || ''}<br>
+                        <small>Автор: ${task.author || 'Аноним'} · Дата: ${task.date || ''}</small>
+                        <button onclick="deleteTask('${id}')">🗑️ Удалить</button>
+                    `;
+                    list.appendChild(div);
+                });
+            } else {
+                list.innerHTML = '<p>Заданий пока нет</p>';
+            }
+        });
 
-    // ---------- ОТПРАВКА В TELEGRAM ----------
-    function sendTelegram(message) {
-      const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
-      const payload = {
-        chat_id: CHAT_ID,
-        text: message,
-        parse_mode: 'HTML'
-      };
-      return fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      }).catch(err => console.warn('Telegram error:', err));
-    }
+        // ---------- ДОБАВЛЕНИЕ ----------
+        document.getElementById('addBtn').addEventListener('click', function() {
+            const subject = document.getElementById('subject').value.trim();
+            const text = document.getElementById('text').value.trim();
+            const date = document.getElementById('date').value;
+            const author = document.getElementById('author').value.trim() || 'Аноним';
 
-    // ---------- РЕНДЕРИНГ ----------
-    function render() {
-      // ... (код рендеринга без изменений, см. предыдущую версию) ...
-      // Я приведу полный код в финальном ответе, здесь сокращаю для экономии места
-    }
+            if (!subject || !text || !date) {
+                alert('Заполните предмет, описание и дату');
+                return;
+            }
 
-    // ... (остальные функции такие же, как в прошлой версии) ...
+            const task = { subject, text, date, author, timestamp: Date.now() };
+            tasksRef.push().set(task)
+                .then(() => {
+                    // Очистка полей
+                    document.getElementById('subject').value = '';
+                    document.getElementById('text').value = '';
+                    document.getElementById('date').value = '';
+                    document.getElementById('author').value = '';
+                    // Отправка в Telegram
+                    const msg = `📚 Новое задание в 6-1!\nПредмет: ${subject}\nЗадание: ${text}\nАвтор: ${author}\nДата: ${date}`;
+                    sendTelegram(msg);
+                })
+                .catch(err => alert('Ошибка сохранения: ' + err.message));
+        });
 
-    // ИНИЦИАЛИЗАЦИЯ
-    loadUserName();
-    loadTheme();
-    loadTasks();
-    formAuthor.value = currentUser;
-    const adminSession = sessionStorage.getItem('hw6_admin');
-    if (adminSession === 'true') {
-      isAdmin = true;
-      updateAdminUI();
-    }
-    updateAdminUI();
+        // ---------- УДАЛЕНИЕ (глобальная функция) ----------
+        window.deleteTask = function(id) {
+            if (confirm('Удалить задание?')) {
+                tasksRef.child(id).remove()
+                    .catch(err => alert('Ошибка удаления: ' + err.message));
+            }
+        };
 
-  })();
-</script>
+        // Проверка, что скрипт загружен
+        console.log('Скрипт загружен');
+    </script>
 </body>
 </html>
