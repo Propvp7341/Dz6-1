@@ -595,7 +595,7 @@
     <div class="modal-overlay" id="taskModal">
         <div class="modal-content">
             <h2 id="modalTitle">Новое задание</h2>
-            <form id="taskForm">
+            <form id="taskForm" onsubmit="return false;">
                 <div class="form-group">
                     <label>Предмет</label>
                     <input type="text" id="formSubject" placeholder="Например, Математика" required>
@@ -621,9 +621,10 @@
                 <input type="hidden" id="editId" value="">
                 <div class="modal-actions">
                     <button type="button" class="btn btn-outline" id="cancelModal">Отмена</button>
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> Сохранить</button>
+                    <button type="button" class="btn btn-primary" id="saveBtn"><i class="fas fa-check"></i> Сохранить</button>
                 </div>
             </form>
+            <div id="saveStatus" style="margin-top:0.5rem;font-size:0.85rem;text-align:center;"></div>
         </div>
     </div>
 
@@ -650,13 +651,18 @@
         const ADMIN_PASSWORD = 'tl132435534231t';
         let editingId = null;
 
-        // ---------- ИНИЦИАЛИЗАЦИЯ ----------
-        firebase.initializeApp(firebaseConfig);
+        // ---------- ИНИЦИАЛИЗАЦИЯ FIREBASE ----------
+        try {
+            firebase.initializeApp(firebaseConfig);
+            document.getElementById('status').textContent = '✅ Firebase подключён';
+            console.log('Firebase OK');
+        } catch (e) {
+            document.getElementById('status').textContent = '❌ Ошибка Firebase: ' + e.message;
+            console.error(e);
+        }
+
         const db = firebase.database();
         const tasksRef = db.ref('tasks');
-
-        const statusDiv = document.getElementById('status');
-        statusDiv.textContent = '✅ Firebase подключён';
 
         // ---------- ЗАГРУЗКА ИМЕНИ ----------
         const savedName = localStorage.getItem('hw6_userName');
@@ -695,7 +701,6 @@
             }
         });
 
-        // Восстановление админа
         if (sessionStorage.getItem('hw6_admin') === 'true') {
             isAdmin = true;
             document.getElementById('adminBtn').classList.add('active');
@@ -727,9 +732,84 @@
             render();
         });
 
-        // ---------- ФУНКЦИИ ----------
+        // ---------- ФУНКЦИЯ ОТПРАВКИ В ТЕЛЕГРАМ ----------
+        function sendTelegram(message) {
+            const url = 'https://api.telegram.org/bot' + BOT_TOKEN + '/sendMessage';
+            fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: CHAT_ID, text: message, parse_mode: 'HTML' })
+            }).catch(function(e) { console.warn('Telegram error:', e); });
+        }
+
+        // ---------- ФУНКЦИЯ СОХРАНЕНИЯ (ОТДЕЛЬНАЯ) ----------
+        function saveTask() {
+            const subject = document.getElementById('formSubject').value.trim();
+            const text = document.getElementById('formText').value.trim();
+            const date = document.getElementById('formDate').value;
+            const author = document.getElementById('formAuthor').value.trim() || currentUser;
+            const attachment = document.getElementById('formAttachment').value.trim();
+
+            // Проверка на пустые поля
+            if (!subject) { alert('Введите предмет!'); return; }
+            if (!text) { alert('Введите описание задания!'); return; }
+            if (!date) { alert('Выберите дату!'); return; }
+
+            // Показываем статус загрузки
+            document.getElementById('saveStatus').textContent = '⏳ Сохранение...';
+            document.getElementById('saveStatus').style.color = '#1a73e8';
+
+            const taskData = {
+                subject: subject,
+                text: text,
+                date: date,
+                author: author,
+                attachment: attachment,
+                done: false,
+                likes: [],
+                timestamp: Date.now()
+            };
+
+            let promise;
+            if (editingId) {
+                // Редактирование существующего задания
+                const old = tasks.find(function(t) { return t.id === editingId; });
+                if (old) {
+                    taskData.likes = old.likes || [];
+                    taskData.timestamp = old.timestamp || Date.now();
+                }
+                promise = tasksRef.child(editingId).update(taskData);
+            } else {
+                // Новое задание
+                promise = tasksRef.push().set(taskData);
+            }
+
+            promise.then(function() {
+                document.getElementById('saveStatus').textContent = '✅ Сохранено!';
+                document.getElementById('saveStatus').style.color = '#34a853';
+                setTimeout(function() {
+                    document.getElementById('saveStatus').textContent = '';
+                    closeModal();
+                }, 1000);
+
+                // Отправка в Telegram только для новых заданий
+                if (!editingId) {
+                    const msg = '📚 <b>Новое задание в 6-1!</b>\n' +
+                        'Предмет: ' + subject + '\n' +
+                        'Задание: ' + text + '\n' +
+                        'Автор: ' + author + '\n' +
+                        'Дата: ' + date.split('-').reverse().join('.');
+                    sendTelegram(msg);
+                }
+            }).catch(function(err) {
+                document.getElementById('saveStatus').textContent = '❌ Ошибка: ' + err.message;
+                document.getElementById('saveStatus').style.color = '#ea4335';
+                console.error('Ошибка сохранения:', err);
+            });
+        }
+
+        // ---------- РЕНДЕРИНГ ----------
         function render() {
-            // Фильтры
             const day = document.getElementById('dayFilter').value;
             const subject = document.getElementById('subjectFilter').value;
             const today = new Date();
@@ -837,7 +917,7 @@
             });
             list.innerHTML = html;
 
-            // Обработчики событий
+            // Обработчики
             list.querySelectorAll('.like-btn').forEach(function(btn) {
                 btn.addEventListener('click', function(e) {
                     e.stopPropagation();
@@ -897,6 +977,7 @@
                 document.getElementById('editId').value = '';
                 editingId = null;
             }
+            document.getElementById('saveStatus').textContent = '';
             document.getElementById('taskModal').classList.add('active');
         }
 
@@ -919,16 +1000,6 @@
             openModal('Редактировать задание', task);
         }
 
-        // ---------- ОТПРАВКА В ТЕЛЕГРАМ ----------
-        function sendTelegram(message) {
-            const url = 'https://api.telegram.org/bot' + BOT_TOKEN + '/sendMessage';
-            fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ chat_id: CHAT_ID, text: message, parse_mode: 'HTML' })
-            }).catch(function(e) { console.warn('Telegram error:', e); });
-        }
-
         // ---------- ОБРАБОТЧИКИ ----------
         document.getElementById('addBtn').addEventListener('click', openAddModal);
         document.getElementById('cancelModal').addEventListener('click', closeModal);
@@ -939,55 +1010,18 @@
             if (e.key === 'Escape') closeModal();
         });
 
-        document.getElementById('taskForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const subject = document.getElementById('formSubject').value.trim();
-            const text = document.getElementById('formText').value.trim();
-            const date = document.getElementById('formDate').value;
-            const author = document.getElementById('formAuthor').value.trim() || currentUser;
-            const attachment = document.getElementById('formAttachment').value.trim();
+        // ----- ГЛАВНОЕ: КНОПКА СОХРАНИТЬ -----
+        document.getElementById('saveBtn').addEventListener('click', function() {
+            saveTask();
+        });
 
-            if (!subject || !text || !date) {
-                alert('Заполните все обязательные поля');
-                return;
-            }
-
-            const taskData = {
-                subject: subject,
-                text: text,
-                date: date,
-                author: author,
-                attachment: attachment,
-                done: false,
-                likes: [],
-                timestamp: Date.now()
-            };
-
-            const isEdit = !!editingId;
-            let promise;
-            if (isEdit) {
-                const old = tasks.find(function(t) { return t.id === editingId; });
-                if (old) {
-                    taskData.likes = old.likes || [];
-                    taskData.timestamp = old.timestamp || Date.now();
+        // Также можно сохранять по Enter в полях (удобно)
+        document.querySelectorAll('#taskForm input, #taskForm textarea').forEach(function(el) {
+            el.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && this.tagName !== 'TEXTAREA') {
+                    e.preventDefault();
+                    saveTask();
                 }
-                promise = tasksRef.child(editingId).update(taskData);
-            } else {
-                promise = tasksRef.push().set(taskData);
-            }
-
-            promise.then(function() {
-                closeModal();
-                if (!isEdit) {
-                    const msg = '📚 <b>Новое задание в 6-1!</b>\n' +
-                        'Предмет: ' + subject + '\n' +
-                        'Задание: ' + text + '\n' +
-                        'Автор: ' + author + '\n' +
-                        'Дата: ' + date.split('-').reverse().join('.');
-                    sendTelegram(msg);
-                }
-            }).catch(function(err) {
-                alert('Ошибка сохранения: ' + err.message);
             });
         });
 
@@ -1001,7 +1035,7 @@
         });
 
         // ---------- СТАРТ ----------
-        console.log('Сайт загружен, ждём данные из Firebase...');
+        console.log('Сайт загружен, кнопка "Сохранить" привязана!');
     </script>
 </body>
 </html>
