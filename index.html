@@ -11,6 +11,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
+        /* Все стили без изменений (как в прошлой версии) */
         * {
             margin: 0;
             padding: 0;
@@ -541,11 +542,11 @@
             }
         }
         .telegram-status {
-            font-size: 0.75rem;
-            margin-top: 0.3rem;
-            padding: 0.2rem 0.8rem;
+            margin-top: 0.5rem;
+            padding: 0.3rem 0.8rem;
             border-radius: 40px;
-            display: inline-block;
+            font-size: 0.8rem;
+            text-align: center;
         }
         .telegram-status.success {
             background: #e6f4ea;
@@ -555,6 +556,10 @@
             background: #fce8e6;
             color: #c62828;
         }
+        .telegram-status.loading {
+            background: #e8f0fe;
+            color: #1a73e8;
+        }
         body.dark .telegram-status.success {
             background: #1e3a2a;
             color: #81c995;
@@ -562,6 +567,10 @@
         body.dark .telegram-status.error {
             background: #3a1a1a;
             color: #ff7a7a;
+        }
+        body.dark .telegram-status.loading {
+            background: #1a2a4a;
+            color: #8ab4ff;
         }
     </style>
 </head>
@@ -647,7 +656,7 @@
                     <button type="button" class="btn btn-primary" id="saveBtn"><i class="fas fa-check"></i> Сохранить</button>
                 </div>
                 <div id="saveStatus" style="margin-top:0.5rem;font-size:0.85rem;text-align:center;"></div>
-                <div id="telegramStatus" style="margin-top:0.3rem;font-size:0.8rem;text-align:center;"></div>
+                <div id="telegramStatus" class="telegram-status" style="display:none;"></div>
             </form>
         </div>
     </div>
@@ -664,9 +673,11 @@
             appId: "1:338642525342:web:bdf14ac6874ebf49dbfa5"
         };
 
-        // ---------- ТЕЛЕГРАМ (ТВОИ ДАННЫЕ) ----------
+        // ---------- ТЕЛЕГРАМ (ТВОИ ДАННЫЕ + ПРОКСИ) ----------
         const BOT_TOKEN = '8274411877:AAE94dt9DOFLXxuer5XSCpch3sZzNkj61UM';
         const CHAT_ID = '-1002883795807';
+        // Используем прокси-адрес для обхода блокировки в РФ
+        const TELEGRAM_API_URL = 'https://tg.i-c-a.su/bot' + BOT_TOKEN + '/sendMessage';
 
         // ---------- ПЕРЕМЕННЫЕ ----------
         let tasks = [];
@@ -675,7 +686,6 @@
         const ADMIN_PASSWORD = 'tl132435534231t';
         let editingId = null;
 
-        // DOM-элементы для статуса
         const saveStatusEl = document.getElementById('saveStatus');
         const telegramStatusEl = document.getElementById('telegramStatus');
 
@@ -683,10 +693,10 @@
         try {
             firebase.initializeApp(firebaseConfig);
             document.getElementById('status').textContent = '✅ Firebase подключён';
-            console.log('Firebase OK');
+            console.log('✅ Firebase инициализирован');
         } catch (e) {
             document.getElementById('status').textContent = '❌ Ошибка Firebase: ' + e.message;
-            console.error(e);
+            console.error('❌ Firebase ошибка:', e);
         }
 
         const db = firebase.database();
@@ -760,11 +770,14 @@
             render();
         });
 
-        // ---------- ФУНКЦИЯ ОТПРАВКИ В ТЕЛЕГРАМ (С ОТОБРАЖЕНИЕМ СТАТУСА) ----------
-        function sendTelegram(message) {
+        // ---------- ОТПРАВКА В TELEGRAM (ЧЕРЕЗ ПРОКСИ) ----------
+        function sendToTelegram(message) {
             return new Promise(function(resolve, reject) {
-                const url = 'https://api.telegram.org/bot' + BOT_TOKEN + '/sendMessage';
-                fetch(url, {
+                console.log('📤 Отправка через прокси:', TELEGRAM_API_URL);
+                console.log('📤 Chat ID:', CHAT_ID);
+                console.log('📤 Сообщение:', message);
+
+                fetch(TELEGRAM_API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -773,21 +786,26 @@
                         parse_mode: 'HTML'
                     })
                 })
-                .then(function(response) { return response.json(); })
+                .then(function(response) {
+                    console.log('📥 Статус ответа:', response.status);
+                    return response.json();
+                })
                 .then(function(data) {
+                    console.log('📥 Ответ Telegram:', data);
                     if (data.ok) {
-                        resolve('✅ Сообщение отправлено в Telegram');
+                        resolve('✅ Сообщение отправлено в Telegram!');
                     } else {
                         reject('❌ Ошибка Telegram: ' + data.description);
                     }
                 })
                 .catch(function(err) {
+                    console.error('❌ Ошибка сети:', err);
                     reject('❌ Ошибка сети: ' + err.message);
                 });
             });
         }
 
-        // ---------- ФУНКЦИЯ СОХРАНЕНИЯ ----------
+        // ---------- СОХРАНЕНИЕ ЗАДАНИЯ ----------
         function saveTask() {
             const subject = document.getElementById('formSubject').value.trim();
             const text = document.getElementById('formText').value.trim();
@@ -801,8 +819,8 @@
 
             saveStatusEl.textContent = '⏳ Сохранение...';
             saveStatusEl.style.color = '#1a73e8';
-            telegramStatusEl.textContent = '';
-            telegramStatusEl.className = '';
+            telegramStatusEl.style.display = 'none';
+            telegramStatusEl.className = 'telegram-status';
 
             const taskData = {
                 subject: subject,
@@ -829,42 +847,46 @@
 
             promise
                 .then(function() {
-                    saveStatusEl.textContent = '✅ Сохранено!';
+                    saveStatusEl.textContent = '✅ Сохранено в Firebase!';
                     saveStatusEl.style.color = '#34a853';
-                    
-                    // Отправка в Telegram только для новых заданий
+
                     if (!editingId) {
                         const msg = '📚 <b>Новое задание в 6-1!</b>\n' +
                             'Предмет: ' + subject + '\n' +
                             'Задание: ' + text + '\n' +
                             'Автор: ' + author + '\n' +
                             'Дата: ' + date.split('-').reverse().join('.');
-                        
+
                         telegramStatusEl.textContent = '⏳ Отправка в Telegram...';
-                        telegramStatusEl.style.color = '#1a73e8';
-                        
-                        sendTelegram(msg)
+                        telegramStatusEl.className = 'telegram-status loading';
+                        telegramStatusEl.style.display = 'block';
+
+                        sendToTelegram(msg)
                             .then(function(status) {
                                 telegramStatusEl.textContent = status;
                                 telegramStatusEl.className = 'telegram-status success';
+                                console.log('✅ Telegram успешно отправлен');
                             })
                             .catch(function(err) {
                                 telegramStatusEl.textContent = err;
                                 telegramStatusEl.className = 'telegram-status error';
+                                console.error('❌ Ошибка Telegram:', err);
                             });
                     } else {
                         telegramStatusEl.textContent = 'ℹ️ Редактирование — уведомление не отправлено';
+                        telegramStatusEl.className = 'telegram-status';
+                        telegramStatusEl.style.display = 'block';
                         telegramStatusEl.style.color = '#6a7a9a';
                     }
 
                     setTimeout(function() {
                         closeModal();
-                    }, 1500);
+                    }, 2000);
                 })
                 .catch(function(err) {
                     saveStatusEl.textContent = '❌ Ошибка: ' + err.message;
                     saveStatusEl.style.color = '#ea4335';
-                    console.error('Ошибка сохранения:', err);
+                    console.error('❌ Ошибка сохранения:', err);
                 });
         }
 
@@ -1038,7 +1060,8 @@
             }
             saveStatusEl.textContent = '';
             telegramStatusEl.textContent = '';
-            telegramStatusEl.className = '';
+            telegramStatusEl.className = 'telegram-status';
+            telegramStatusEl.style.display = 'none';
             document.getElementById('taskModal').classList.add('active');
         }
 
@@ -1094,7 +1117,8 @@
         });
 
         // ---------- СТАРТ ----------
-        console.log('Сайт загружен, Telegram-отправка с отладкой!');
+        console.log('🚀 Сайт загружен, используется прокси для Telegram: tg.i-c-a.su');
+        console.log('📌 Если сообщения не приходят — проверьте консоль на ошибки');
     </script>
 </body>
 </html>
