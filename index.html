@@ -11,12 +11,8 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
-        /* Все стили без изменений (как в прошлой версии) */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        /* ---------- ВСЕ СТИЛИ БЕЗ ИЗМЕНЕНИЙ (как в прошлой версии) ---------- */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Inter', system-ui, sans-serif;
             background: #f5f7fc;
@@ -263,6 +259,14 @@
             border-color: #b0c8f0;
             transform: translateY(-2px);
         }
+        .card.pinned {
+            border-color: #f0b400;
+            background: #fffbe6;
+        }
+        body.dark .card.pinned {
+            border-color: #f0b400;
+            background: #1a1a0a;
+        }
         .task-header {
             display: flex;
             justify-content: space-between;
@@ -374,6 +378,7 @@
             display: flex;
             gap: 0.3rem;
             align-items: center;
+            flex-wrap: wrap;
         }
         .like-btn {
             background: none;
@@ -400,6 +405,21 @@
         .like-btn:hover {
             transform: scale(1.1);
         }
+        .pin-btn {
+            background: none;
+            border: none;
+            font-size: 1rem;
+            cursor: pointer;
+            color: #b0b8d0;
+            transition: 0.15s;
+        }
+        .pin-btn.active {
+            color: #f0b400;
+        }
+        .pin-btn:hover {
+            transform: scale(1.1);
+        }
+
         .modal-overlay {
             position: fixed;
             inset: 0;
@@ -509,68 +529,94 @@
             border-top-color: #2a2a40;
             color: #6a7a9a;
         }
-        @media (max-width: 600px) {
-            body {
-                padding: 0.8rem;
-            }
-            .app-header h1 {
-                font-size: 1.4rem;
-            }
-            .filter-bar {
-                border-radius: 20px;
-                padding: 0.6rem;
-            }
-            .filter-bar label {
-                width: 100%;
-            }
-            .filter-bar .filter-reset {
-                margin-left: 0;
-            }
-            .card {
-                padding: 1rem;
-            }
-            .modal-content {
-                padding: 1.5rem;
-            }
-            .task-footer {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 0.5rem;
-            }
-            .task-actions {
-                justify-content: flex-end;
-            }
+        .admin-panel {
+            background: #fff;
+            border-radius: 24px;
+            padding: 1.5rem;
+            border: 1px solid #f0b400;
+            margin-bottom: 1.5rem;
+            display: none;
         }
-        .telegram-status {
+        .admin-panel.visible {
+            display: block;
+        }
+        body.dark .admin-panel {
+            background: #1a1a2a;
+            border-color: #f0b400;
+        }
+        .admin-panel h3 {
+            margin-bottom: 1rem;
+            color: #f0b400;
+        }
+        .admin-panel .form-group {
+            margin-bottom: 0.8rem;
+        }
+        .admin-panel .btn {
+            margin-right: 0.5rem;
+            margin-bottom: 0.3rem;
+        }
+        .admin-panel .stat-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
             margin-top: 0.5rem;
-            padding: 0.3rem 0.8rem;
+        }
+        .admin-panel .stat-table th,
+        .admin-panel .stat-table td {
+            padding: 0.3rem 0.6rem;
+            border: 1px solid #dce0e8;
+            text-align: left;
+        }
+        body.dark .admin-panel .stat-table th,
+        body.dark .admin-panel .stat-table td {
+            border-color: #2a2a40;
+        }
+        .admin-panel .stat-table th {
+            background: #eef2f8;
+        }
+        body.dark .admin-panel .stat-table th {
+            background: #1a1a2a;
+        }
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a73e8;
+            color: #fff;
+            padding: 0.8rem 2rem;
             border-radius: 40px;
-            font-size: 0.8rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            z-index: 2000;
+            font-weight: 500;
             text-align: center;
+            max-width: 90%;
+            opacity: 0;
+            transition: 0.3s;
+            pointer-events: none;
         }
-        .telegram-status.success {
-            background: #e6f4ea;
-            color: #1e7e34;
-        }
-        .telegram-status.error {
-            background: #fce8e6;
-            color: #c62828;
-        }
-        .telegram-status.loading {
-            background: #e8f0fe;
-            color: #1a73e8;
-        }
-        body.dark .telegram-status.success {
-            background: #1e3a2a;
-            color: #81c995;
-        }
-        body.dark .telegram-status.error {
-            background: #3a1a1a;
-            color: #ff7a7a;
-        }
-        body.dark .telegram-status.loading {
+        body.dark .notification {
             background: #1a2a4a;
-            color: #8ab4ff;
+            color: #eaeef5;
+        }
+        .notification.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+        .notification.hide {
+            opacity: 0;
+            transform: translateX(-50%) translateY(-20px);
+        }
+        @media (max-width: 600px) {
+            body { padding: 0.8rem; }
+            .app-header h1 { font-size: 1.4rem; }
+            .filter-bar { border-radius: 20px; padding: 0.6rem; }
+            .filter-bar label { width: 100%; }
+            .filter-bar .filter-reset { margin-left: 0; }
+            .card { padding: 1rem; }
+            .modal-content { padding: 1.5rem; }
+            .task-footer { flex-direction: column; align-items: stretch; gap: 0.5rem; }
+            .task-actions { justify-content: flex-end; }
         }
     </style>
 </head>
@@ -585,6 +631,31 @@
                 <button class="theme-toggle" id="themeToggle"><i class="fas fa-moon"></i></button>
             </div>
         </header>
+
+        <!-- АДМИН-ПАНЕЛЬ -->
+        <div class="admin-panel" id="adminPanel">
+            <h3>🛠 Админ-панель</h3>
+            <div class="form-group">
+                <label>Уведомление для всех</label>
+                <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+                    <input type="text" id="adminNotifyInput" placeholder="Текст уведомления" style="flex:1;">
+                    <button class="btn btn-primary" id="adminNotifyBtn"><i class="fas fa-bell"></i> Отправить</button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Бан пользователя</label>
+                <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+                    <input type="text" id="adminBanInput" placeholder="Имя пользователя" style="flex:1;">
+                    <button class="btn btn-danger" id="adminBanBtn"><i class="fas fa-ban"></i> Забанить</button>
+                    <button class="btn btn-outline" id="adminUnbanBtn"><i class="fas fa-undo"></i> Разбанить</button>
+                </div>
+            </div>
+            <div class="form-group">
+                <button class="btn btn-danger" id="adminClearOldBtn"><i class="fas fa-trash"></i> Удалить все просроченные</button>
+                <button class="btn btn-outline" id="adminRefreshStatsBtn"><i class="fas fa-chart-bar"></i> Обновить статистику</button>
+            </div>
+            <div id="adminStats" style="margin-top:0.5rem;font-size:0.85rem;"></div>
+        </div>
 
         <div class="filter-bar">
             <label><i class="fas fa-calendar-day"></i> День
@@ -656,13 +727,15 @@
                     <button type="button" class="btn btn-primary" id="saveBtn"><i class="fas fa-check"></i> Сохранить</button>
                 </div>
                 <div id="saveStatus" style="margin-top:0.5rem;font-size:0.85rem;text-align:center;"></div>
-                <div id="telegramStatus" class="telegram-status" style="display:none;"></div>
             </form>
         </div>
     </div>
 
+    <!-- Уведомление -->
+    <div class="notification" id="notification"></div>
+
     <script>
-        // ---------- КОНФИГ FIREBASE ----------
+        // ---------- КОНФИГ ----------
         const firebaseConfig = {
             apiKey: "AIzaSyB55xY6dYAaysFfZeeJCWUGWDkMOuApFO",
             authDomain: "dz-6-1.firebaseapp.com",
@@ -673,10 +746,9 @@
             appId: "1:338642525342:web:bdf14ac6874ebf49dbfa5"
         };
 
-        // ---------- ТЕЛЕГРАМ (ТВОИ ДАННЫЕ + ПРОКСИ) ----------
+        // ---------- TELEGRAM (ПРОКСИ) ----------
         const BOT_TOKEN = '8274411877:AAE94dt9DOFLXxuer5XSCpch3sZzNkj61UM';
         const CHAT_ID = '-1002883795807';
-        // Используем прокси-адрес для обхода блокировки в РФ
         const TELEGRAM_API_URL = 'https://tg.i-c-a.su/bot' + BOT_TOKEN + '/sendMessage';
 
         // ---------- ПЕРЕМЕННЫЕ ----------
@@ -685,22 +757,55 @@
         let isAdmin = false;
         const ADMIN_PASSWORD = 'tl132435534231t';
         let editingId = null;
+        let bannedUsers = [];
 
+        // DOM
+        const taskListEl = document.getElementById('taskList');
+        const taskCountEl = document.getElementById('taskCount');
+        const footerCountEl = document.getElementById('footerCount');
+        const modalOverlay = document.getElementById('taskModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const taskForm = document.getElementById('taskForm');
+        const formSubject = document.getElementById('formSubject');
+        const formText = document.getElementById('formText');
+        const formDate = document.getElementById('formDate');
+        const formAuthor = document.getElementById('formAuthor');
+        const formAttachment = document.getElementById('formAttachment');
+        const editIdInput = document.getElementById('editId');
+        const cancelModalBtn = document.getElementById('cancelModal');
+        const addBtn = document.getElementById('addBtn');
+        const dayFilter = document.getElementById('dayFilter');
+        const subjectFilter = document.getElementById('subjectFilter');
+        const resetFiltersBtn = document.getElementById('resetFilters');
+        const adminBtn = document.getElementById('adminBtn');
+        const adminLabel = document.getElementById('adminLabel');
+        const adminPanel = document.getElementById('adminPanel');
+        const themeToggle = document.getElementById('themeToggle');
         const saveStatusEl = document.getElementById('saveStatus');
-        const telegramStatusEl = document.getElementById('telegramStatus');
+        const notificationEl = document.getElementById('notification');
+
+        const adminNotifyInput = document.getElementById('adminNotifyInput');
+        const adminNotifyBtn = document.getElementById('adminNotifyBtn');
+        const adminBanInput = document.getElementById('adminBanInput');
+        const adminBanBtn = document.getElementById('adminBanBtn');
+        const adminUnbanBtn = document.getElementById('adminUnbanBtn');
+        const adminClearOldBtn = document.getElementById('adminClearOldBtn');
+        const adminRefreshStatsBtn = document.getElementById('adminRefreshStatsBtn');
+        const adminStats = document.getElementById('adminStats');
 
         // ---------- ИНИЦИАЛИЗАЦИЯ FIREBASE ----------
         try {
             firebase.initializeApp(firebaseConfig);
             document.getElementById('status').textContent = '✅ Firebase подключён';
-            console.log('✅ Firebase инициализирован');
+            console.log('✅ Firebase OK');
         } catch (e) {
             document.getElementById('status').textContent = '❌ Ошибка Firebase: ' + e.message;
-            console.error('❌ Firebase ошибка:', e);
+            console.error('❌ Firebase error:', e);
         }
 
         const db = firebase.database();
         const tasksRef = db.ref('tasks');
+        const bannedRef = db.ref('banned');
 
         // ---------- ЗАГРУЗКА ИМЕНИ ----------
         const savedName = localStorage.getItem('hw6_userName');
@@ -718,12 +823,13 @@
         document.getElementById('formAuthor').value = currentUser;
 
         // ---------- АДМИН ----------
-        document.getElementById('adminBtn').addEventListener('click', function() {
+        function toggleAdmin() {
             if (isAdmin) {
                 isAdmin = false;
                 sessionStorage.removeItem('hw6_admin');
-                this.classList.remove('active');
-                document.getElementById('adminLabel').textContent = 'Админ';
+                adminBtn.classList.remove('active');
+                adminLabel.textContent = 'Админ';
+                adminPanel.classList.remove('visible');
                 render();
                 return;
             }
@@ -731,18 +837,22 @@
             if (pass === ADMIN_PASSWORD) {
                 isAdmin = true;
                 sessionStorage.setItem('hw6_admin', 'true');
-                this.classList.add('active');
-                document.getElementById('adminLabel').textContent = 'Админ (вкл)';
+                adminBtn.classList.add('active');
+                adminLabel.textContent = 'Админ (вкл)';
+                adminPanel.classList.add('visible');
                 render();
+                showStats();
             } else if (pass !== null) {
                 alert('Неверный пароль!');
             }
-        });
+        }
+        adminBtn.addEventListener('click', toggleAdmin);
 
         if (sessionStorage.getItem('hw6_admin') === 'true') {
             isAdmin = true;
-            document.getElementById('adminBtn').classList.add('active');
-            document.getElementById('adminLabel').textContent = 'Админ (вкл)';
+            adminBtn.classList.add('active');
+            adminLabel.textContent = 'Админ (вкл)';
+            adminPanel.classList.add('visible');
         }
 
         // ---------- ТЕМА ----------
@@ -757,6 +867,16 @@
             document.getElementById('themeToggle').innerHTML = '<i class="fas fa-sun"></i>';
         }
 
+        // ---------- ЗАГРУЗКА БАН-ЛИСТА ----------
+        bannedRef.on('value', function(snapshot) {
+            const data = snapshot.val();
+            if (data) {
+                bannedUsers = Object.values(data);
+            } else {
+                bannedUsers = [];
+            }
+        });
+
         // ---------- ЗАГРУЗКА ЗАДАНИЙ ----------
         tasksRef.on('value', function(snapshot) {
             const data = snapshot.val();
@@ -770,42 +890,27 @@
             render();
         });
 
-        // ---------- ОТПРАВКА В TELEGRAM (ЧЕРЕЗ ПРОКСИ) ----------
-        function sendToTelegram(message) {
-            return new Promise(function(resolve, reject) {
-                console.log('📤 Отправка через прокси:', TELEGRAM_API_URL);
-                console.log('📤 Chat ID:', CHAT_ID);
-                console.log('📤 Сообщение:', message);
-
-                fetch(TELEGRAM_API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        chat_id: CHAT_ID,
-                        text: message,
-                        parse_mode: 'HTML'
-                    })
-                })
-                .then(function(response) {
-                    console.log('📥 Статус ответа:', response.status);
-                    return response.json();
-                })
-                .then(function(data) {
-                    console.log('📥 Ответ Telegram:', data);
-                    if (data.ok) {
-                        resolve('✅ Сообщение отправлено в Telegram!');
-                    } else {
-                        reject('❌ Ошибка Telegram: ' + data.description);
-                    }
-                })
-                .catch(function(err) {
-                    console.error('❌ Ошибка сети:', err);
-                    reject('❌ Ошибка сети: ' + err.message);
-                });
-            });
+        // ---------- УВЕДОМЛЕНИЕ ----------
+        function showNotification(text, duration) {
+            duration = duration || 5000;
+            notificationEl.textContent = text;
+            notificationEl.className = 'notification show';
+            clearTimeout(notificationEl._timer);
+            notificationEl._timer = setTimeout(function() {
+                notificationEl.className = 'notification hide';
+            }, duration);
         }
 
-        // ---------- СОХРАНЕНИЕ ЗАДАНИЯ ----------
+        // ---------- ОТПРАВКА В TELEGRAM ----------
+        function sendToTelegram(message) {
+            return fetch(TELEGRAM_API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: CHAT_ID, text: message, parse_mode: 'HTML' })
+            }).then(function(r) { return r.json(); });
+        }
+
+        // ---------- СОХРАНЕНИЕ ----------
         function saveTask() {
             const subject = document.getElementById('formSubject').value.trim();
             const text = document.getElementById('formText').value.trim();
@@ -817,10 +922,13 @@
             if (!text) { alert('Введите описание задания!'); return; }
             if (!date) { alert('Выберите дату!'); return; }
 
+            if (bannedUsers.indexOf(author) !== -1) {
+                alert('❌ Вы забанены и не можете добавлять задания!');
+                return;
+            }
+
             saveStatusEl.textContent = '⏳ Сохранение...';
             saveStatusEl.style.color = '#1a73e8';
-            telegramStatusEl.style.display = 'none';
-            telegramStatusEl.className = 'telegram-status';
 
             const taskData = {
                 subject: subject,
@@ -830,6 +938,7 @@
                 attachment: attachment,
                 done: false,
                 likes: [],
+                pinned: false,
                 timestamp: Date.now()
             };
 
@@ -839,61 +948,36 @@
                 if (old) {
                     taskData.likes = old.likes || [];
                     taskData.timestamp = old.timestamp || Date.now();
+                    taskData.pinned = old.pinned || false;
                 }
                 promise = tasksRef.child(editingId).update(taskData);
             } else {
                 promise = tasksRef.push().set(taskData);
             }
 
-            promise
-                .then(function() {
-                    saveStatusEl.textContent = '✅ Сохранено в Firebase!';
-                    saveStatusEl.style.color = '#34a853';
-
-                    if (!editingId) {
-                        const msg = '📚 <b>Новое задание в 6-1!</b>\n' +
-                            'Предмет: ' + subject + '\n' +
-                            'Задание: ' + text + '\n' +
-                            'Автор: ' + author + '\n' +
-                            'Дата: ' + date.split('-').reverse().join('.');
-
-                        telegramStatusEl.textContent = '⏳ Отправка в Telegram...';
-                        telegramStatusEl.className = 'telegram-status loading';
-                        telegramStatusEl.style.display = 'block';
-
-                        sendToTelegram(msg)
-                            .then(function(status) {
-                                telegramStatusEl.textContent = status;
-                                telegramStatusEl.className = 'telegram-status success';
-                                console.log('✅ Telegram успешно отправлен');
-                            })
-                            .catch(function(err) {
-                                telegramStatusEl.textContent = err;
-                                telegramStatusEl.className = 'telegram-status error';
-                                console.error('❌ Ошибка Telegram:', err);
-                            });
-                    } else {
-                        telegramStatusEl.textContent = 'ℹ️ Редактирование — уведомление не отправлено';
-                        telegramStatusEl.className = 'telegram-status';
-                        telegramStatusEl.style.display = 'block';
-                        telegramStatusEl.style.color = '#6a7a9a';
-                    }
-
-                    setTimeout(function() {
-                        closeModal();
-                    }, 2000);
-                })
-                .catch(function(err) {
-                    saveStatusEl.textContent = '❌ Ошибка: ' + err.message;
-                    saveStatusEl.style.color = '#ea4335';
-                    console.error('❌ Ошибка сохранения:', err);
-                });
+            promise.then(function() {
+                saveStatusEl.textContent = '✅ Сохранено!';
+                saveStatusEl.style.color = '#34a853';
+                if (!editingId) {
+                    const msg = '📚 <b>Новое задание в 6-1!</b>\n' +
+                        'Предмет: ' + subject + '\n' +
+                        'Задание: ' + text + '\n' +
+                        'Автор: ' + author + '\n' +
+                        'Дата: ' + date.split('-').reverse().join('.');
+                    sendToTelegram(msg).catch(function(e) { console.warn('Telegram error:', e); });
+                }
+                setTimeout(function() { closeModal(); }, 1000);
+            }).catch(function(err) {
+                saveStatusEl.textContent = '❌ Ошибка: ' + err.message;
+                saveStatusEl.style.color = '#ea4335';
+                console.error('❌ Save error:', err);
+            });
         }
 
         // ---------- РЕНДЕРИНГ ----------
         function render() {
-            const day = document.getElementById('dayFilter').value;
-            const subject = document.getElementById('subjectFilter').value;
+            const day = dayFilter.value;
+            const subject = subjectFilter.value;
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             const tomorrow = new Date(today);
@@ -906,50 +990,48 @@
                 if (day !== 'all') {
                     const taskDate = new Date(task.date + 'T00:00:00');
                     if (day === 'today' && (taskDate < today || taskDate >= tomorrow)) return false;
-                    if (day === 'tomorrow' && (taskDate < tomorrow || taskDate >= new Date(tomorrow.getTime() +
-                            86400000))) return false;
+                    if (day === 'tomorrow' && (taskDate < tomorrow || taskDate >= new Date(tomorrow.getTime() + 86400000))) return false;
                     if (day === 'week' && (taskDate < today || taskDate >= weekEnd)) return false;
                 }
                 return true;
             });
 
+            // Сортировка: сначала закреплённые, потом по дате
             filtered.sort(function(a, b) {
+                if (a.pinned && !b.pinned) return -1;
+                if (!a.pinned && b.pinned) return 1;
                 const da = new Date(a.date + 'T00:00:00');
                 const db = new Date(b.date + 'T00:00:00');
                 return da - db;
             });
 
-            document.getElementById('taskCount').textContent = tasks.length;
-            document.getElementById('footerCount').textContent = tasks.length;
+            taskCountEl.textContent = tasks.length;
+            footerCountEl.textContent = tasks.length;
 
-            const list = document.getElementById('taskList');
+            const list = taskListEl;
             if (filtered.length === 0) {
-                list.innerHTML =
-                    '<div class="empty-state"><i class="fas fa-inbox"></i><p>Заданий пока нет</p></div>';
+                list.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><p>Заданий пока нет</p></div>';
                 return;
             }
 
             let html = '';
             filtered.forEach(function(task) {
                 const taskDate = new Date(task.date + 'T00:00:00');
-                const now = new Date();
-                now.setHours(0, 0, 0, 0);
+                const now = new Date(); now.setHours(0,0,0,0);
                 const isOverdue = !task.done && taskDate < now;
                 const dateStr = task.date.split('-').reverse().join('.');
-                const dayOfWeek = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'][taskDate.getDay()];
+                const dayOfWeek = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'][taskDate.getDay()];
 
                 const author = task.author || 'Аноним';
-                const initials = author.split(' ').map(function(s) { return s[0]; }).join('').toUpperCase().slice(0, 2);
+                const initials = author.split(' ').map(function(s) { return s[0]; }).join('').toUpperCase().slice(0,2);
 
                 let attachHtml = '';
                 if (task.attachment && task.attachment.trim() !== '') {
                     const url = task.attachment.trim();
                     if (/\.(jpg|jpeg|png|gif|webp|svg)$/i.test(url)) {
-                        attachHtml =
-                            '<div class="task-attachment"><img src="' + url + '" alt="фото" loading="lazy"></div>';
+                        attachHtml = '<div class="task-attachment"><img src="' + url + '" alt="фото" loading="lazy"></div>';
                     } else {
-                        attachHtml = '<div class="task-attachment"><i class="fas fa-paperclip"></i> <a href="' + url +
-                            '" target="_blank">Ссылка</a></div>';
+                        attachHtml = '<div class="task-attachment"><i class="fas fa-paperclip"></i> <a href="' + url + '" target="_blank">Ссылка</a></div>';
                     }
                 }
 
@@ -959,17 +1041,21 @@
 
                 let adminButtons = '';
                 if (isAdmin || task.author === currentUser) {
-                    adminButtons =
-                        '<button class="btn btn-outline btn-sm editBtn" data-id="' + task.id +
-                        '"><i class="fas fa-edit"></i></button>' +
-                        '<button class="btn btn-danger btn-sm deleteBtn" data-id="' + task.id +
-                        '"><i class="fas fa-trash"></i></button>';
+                    adminButtons +=
+                        '<button class="btn btn-outline btn-sm editBtn" data-id="' + task.id + '"><i class="fas fa-edit"></i></button>' +
+                        '<button class="btn btn-danger btn-sm deleteBtn" data-id="' + task.id + '"><i class="fas fa-trash"></i></button>';
+                }
+                if (isAdmin) {
+                    adminButtons +=
+                        '<button class="pin-btn ' + (task.pinned ? 'active' : '') + '" data-id="' + task.id + '" title="Закрепить"><i class="fas fa-thumbtack"></i></button>';
                 }
 
+                const isBanned = bannedUsers.indexOf(currentUser) !== -1;
+
                 html +=
-                    '<div class="card" data-id="' + task.id + '">' +
+                    '<div class="card ' + (task.pinned ? 'pinned' : '') + '" data-id="' + task.id + '">' +
                     '<div class="task-header">' +
-                    '<span class="task-subject">' + task.subject + '</span>' +
+                    '<span class="task-subject">' + (task.pinned ? '⭐ ' : '') + task.subject + '</span>' +
                     '<span class="task-date ' + (isOverdue ? 'overdue' : '') + '">' +
                     '<i class="far fa-calendar-alt"></i> ' + dateStr + ' (' + dayOfWeek + ')' +
                     (isOverdue ? ' <i class="fas fa-exclamation-triangle"></i>' : '') +
@@ -982,13 +1068,12 @@
                     '<div class="avatar">' + initials + '</div>' +
                     '<div>' +
                     '<span class="author-name">' + author + '</span>' +
-                    '<span class="author-time"> · <i class="far fa-clock"></i> ' + new Date(task.timestamp || task.id)
-                    .toLocaleString('ru', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) +
+                    '<span class="author-time"> · <i class="far fa-clock"></i> ' + new Date(task.timestamp || task.id).toLocaleString('ru', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'}) +
                     '</span>' +
                     '</div>' +
                     '</div>' +
                     '<div class="task-actions">' +
-                    '<button class="like-btn ' + (userLiked ? 'liked' : '') + '" data-id="' + task.id + '">' +
+                    '<button class="like-btn ' + (userLiked ? 'liked' : '') + (isBanned ? ' disabled' : '') + '" data-id="' + task.id + '" ' + (isBanned ? 'style="opacity:0.4;cursor:not-allowed;"' : '') + '>' +
                     '<i class="fas fa-heart"></i>' +
                     '<span class="like-count">' + likeCount + '</span>' +
                     '</button>' +
@@ -999,9 +1084,11 @@
             });
             list.innerHTML = html;
 
+            // Обработчики
             list.querySelectorAll('.like-btn').forEach(function(btn) {
                 btn.addEventListener('click', function(e) {
                     e.stopPropagation();
+                    if (this.classList.contains('disabled')) return;
                     const id = this.dataset.id;
                     toggleLike(id);
                 });
@@ -1022,10 +1109,21 @@
                     }
                 });
             });
+            list.querySelectorAll('.pin-btn').forEach(function(btn) {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const id = this.dataset.id;
+                    togglePin(id);
+                });
+            });
         }
 
         // ---------- ЛАЙК ----------
         function toggleLike(taskId) {
+            if (bannedUsers.indexOf(currentUser) !== -1) {
+                showNotification('❌ Вы забанены и не можете ставить лайки!', 3000);
+                return;
+            }
             const task = tasks.find(function(t) { return t.id === taskId; });
             if (!task) return;
             const likes = task.likes || [];
@@ -1038,35 +1136,123 @@
             tasksRef.child(taskId).update({ likes: likes });
         }
 
+        // ---------- ЗАКРЕП ----------
+        function togglePin(taskId) {
+            if (!isAdmin) return;
+            const task = tasks.find(function(t) { return t.id === taskId; });
+            if (!task) return;
+            tasksRef.child(taskId).update({ pinned: !task.pinned });
+        }
+
+        // ---------- СТАТИСТИКА ----------
+        function showStats() {
+            if (!isAdmin) return;
+            const stats = {};
+            tasks.forEach(function(task) {
+                const author = task.author || 'Аноним';
+                if (!stats[author]) stats[author] = { tasks: 0, likes: 0 };
+                stats[author].tasks++;
+                const likes = task.likes || [];
+                stats[author].likes += likes.length;
+            });
+            let html = '<h4>📊 Статистика класса</h4><table class="stat-table"><tr><th>Ученик</th><th>Заданий</th><th>Лайков</th></tr>';
+            const sorted = Object.entries(stats).sort(function(a, b) { return b[1].tasks - a[1].tasks; });
+            sorted.forEach(function(entry) {
+                html += '<tr><td>' + entry[0] + '</td><td>' + entry[1].tasks + '</td><td>' + entry[1].likes + '</td></tr>';
+            });
+            html += '</table>';
+            adminStats.innerHTML = html;
+        }
+
+        // ---------- АДМИН-ФУНКЦИИ ----------
+        adminNotifyBtn.addEventListener('click', function() {
+            if (!isAdmin) return;
+            const text = adminNotifyInput.value.trim();
+            if (!text) { alert('Введите текст уведомления!'); return; }
+            showNotification('📢 ' + text, 8000);
+            adminNotifyInput.value = '';
+        });
+
+        adminBanBtn.addEventListener('click', function() {
+            if (!isAdmin) return;
+            const name = adminBanInput.value.trim();
+            if (!name) { alert('Введите имя пользователя!'); return; }
+            if (bannedUsers.indexOf(name) !== -1) { alert('Уже забанен!'); return; }
+            bannedRef.push(name);
+            adminBanInput.value = '';
+            showNotification('✅ ' + name + ' забанен!', 3000);
+        });
+
+        adminUnbanBtn.addEventListener('click', function() {
+            if (!isAdmin) return;
+            const name = adminBanInput.value.trim();
+            if (!name) { alert('Введите имя пользователя!'); return; }
+            bannedRef.once('value', function(snapshot) {
+                const data = snapshot.val();
+                if (data) {
+                    let found = false;
+                    Object.entries(data).forEach(function(entry) {
+                        if (entry[1] === name) {
+                            bannedRef.child(entry[0]).remove();
+                            found = true;
+                        }
+                    });
+                    if (found) {
+                        showNotification('✅ ' + name + ' разбанен!', 3000);
+                    } else {
+                        alert('Пользователь не найден в бан-листе!');
+                    }
+                }
+            });
+            adminBanInput.value = '';
+        });
+
+        adminClearOldBtn.addEventListener('click', function() {
+            if (!isAdmin) return;
+            if (!confirm('Удалить все просроченные задания?')) return;
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            tasks.forEach(function(task) {
+                const taskDate = new Date(task.date + 'T00:00:00');
+                if (taskDate < today) {
+                    tasksRef.child(task.id).remove();
+                }
+            });
+            showNotification('✅ Просроченные задания удалены!', 3000);
+        });
+
+        adminRefreshStatsBtn.addEventListener('click', function() {
+            if (!isAdmin) return;
+            showStats();
+            showNotification('✅ Статистика обновлена!', 2000);
+        });
+
         // ---------- МОДАЛКА ----------
         function openModal(title, data) {
-            document.getElementById('modalTitle').textContent = title;
+            modalTitle.textContent = title;
             if (data) {
-                document.getElementById('formSubject').value = data.subject || '';
-                document.getElementById('formText').value = data.text || '';
-                document.getElementById('formDate').value = data.date || '';
-                document.getElementById('formAuthor').value = data.author || '';
-                document.getElementById('formAttachment').value = data.attachment || '';
-                document.getElementById('editId').value = data.id || '';
+                formSubject.value = data.subject || '';
+                formText.value = data.text || '';
+                formDate.value = data.date || '';
+                formAuthor.value = data.author || '';
+                formAttachment.value = data.attachment || '';
+                editIdInput.value = data.id || '';
                 editingId = data.id || null;
             } else {
-                document.getElementById('formSubject').value = '';
-                document.getElementById('formText').value = '';
-                document.getElementById('formDate').value = new Date().toISOString().split('T')[0];
-                document.getElementById('formAuthor').value = currentUser;
-                document.getElementById('formAttachment').value = '';
-                document.getElementById('editId').value = '';
+                formSubject.value = '';
+                formText.value = '';
+                formDate.value = new Date().toISOString().split('T')[0];
+                formAuthor.value = currentUser;
+                formAttachment.value = '';
+                editIdInput.value = '';
                 editingId = null;
             }
             saveStatusEl.textContent = '';
-            telegramStatusEl.textContent = '';
-            telegramStatusEl.className = 'telegram-status';
-            telegramStatusEl.style.display = 'none';
-            document.getElementById('taskModal').classList.add('active');
+            modalOverlay.classList.add('active');
         }
 
         function closeModal() {
-            document.getElementById('taskModal').classList.remove('active');
+            modalOverlay.classList.remove('active');
             editingId = null;
         }
 
@@ -1085,18 +1271,16 @@
         }
 
         // ---------- ОБРАБОТЧИКИ ----------
-        document.getElementById('addBtn').addEventListener('click', openAddModal);
-        document.getElementById('cancelModal').addEventListener('click', closeModal);
-        document.getElementById('taskModal').addEventListener('click', function(e) {
-            if (e.target === this) closeModal();
+        addBtn.addEventListener('click', openAddModal);
+        cancelModalBtn.addEventListener('click', closeModal);
+        modalOverlay.addEventListener('click', function(e) {
+            if (e.target === modalOverlay) closeModal();
         });
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') closeModal();
         });
 
-        document.getElementById('saveBtn').addEventListener('click', function() {
-            saveTask();
-        });
+        document.getElementById('saveBtn').addEventListener('click', saveTask);
 
         document.querySelectorAll('#taskForm input, #taskForm textarea').forEach(function(el) {
             el.addEventListener('keydown', function(e) {
@@ -1108,17 +1292,17 @@
         });
 
         // ---------- ФИЛЬТРЫ ----------
-        document.getElementById('dayFilter').addEventListener('change', render);
-        document.getElementById('subjectFilter').addEventListener('change', render);
-        document.getElementById('resetFilters').addEventListener('click', function() {
-            document.getElementById('dayFilter').value = 'all';
-            document.getElementById('subjectFilter').value = 'all';
+        dayFilter.addEventListener('change', render);
+        subjectFilter.addEventListener('change', render);
+        resetFiltersBtn.addEventListener('click', function() {
+            dayFilter.value = 'all';
+            subjectFilter.value = 'all';
             render();
         });
 
         // ---------- СТАРТ ----------
-        console.log('🚀 Сайт загружен, используется прокси для Telegram: tg.i-c-a.su');
-        console.log('📌 Если сообщения не приходят — проверьте консоль на ошибки');
+        console.log('🚀 Сайт загружен с админ-панелью');
+        if (isAdmin) showStats();
     </script>
 </body>
 </html>
