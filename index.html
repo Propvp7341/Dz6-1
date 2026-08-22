@@ -11,7 +11,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
-        /* ---------- ВСЕ СТИЛИ БЕЗ ИЗМЕНЕНИЙ (как в прошлой версии) ---------- */
+        /* ---------- ВСЕ СТИЛИ БЕЗ ИЗМЕНЕНИЙ ---------- */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Inter', system-ui, sans-serif;
@@ -607,6 +607,18 @@
             opacity: 0;
             transform: translateX(-50%) translateY(-20px);
         }
+
+        /* НОВАЯ ЗАГЛУШКА ЗАГРУЗКИ */
+        .loading-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #6a7a9a;
+        }
+        .loading-state i {
+            font-size: 2rem;
+            margin-right: 0.5rem;
+        }
+
         @media (max-width: 600px) {
             body { padding: 0.8rem; }
             .app-header h1 { font-size: 1.4rem; }
@@ -650,7 +662,7 @@
                     <button class="btn btn-outline" id="adminUnbanBtn"><i class="fas fa-undo"></i> Разбанить</button>
                 </div>
             </div>
-            <!-- НОВЫЙ БЛОК: УПРАВЛЕНИЕ АДМИНАМИ (только для суперадмина) -->
+            <!-- УПРАВЛЕНИЕ АДМИНАМИ (только суперадмин) -->
             <div class="form-group" id="adminManageGroup" style="display:none;">
                 <label>Управление админами (только суперадмин)</label>
                 <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
@@ -765,11 +777,12 @@
         let tasks = [];
         let currentUser = '';
         let isAdmin = false;
-        let isSuperAdmin = false; // только тот, кто ввёл пароль
+        let isSuperAdmin = false;
         const ADMIN_PASSWORD = 'tl132435534231t';
         let editingId = null;
         let bannedUsers = [];
-        let adminUsers = []; // список имён админов
+        let adminUsers = [];
+        let isLoading = true;  // НОВАЯ ПЕРЕМЕННАЯ ДЛЯ ЗАГЛУШКИ
 
         // DOM
         const taskListEl = document.getElementById('taskList');
@@ -805,7 +818,6 @@
         const adminRefreshStatsBtn = document.getElementById('adminRefreshStatsBtn');
         const adminStats = document.getElementById('adminStats');
 
-        // Новые элементы для управления админами
         const adminManageGroup = document.getElementById('adminManageGroup');
         const adminAddInput = document.getElementById('adminAddInput');
         const adminAddBtn = document.getElementById('adminAddBtn');
@@ -866,7 +878,6 @@
 
         // ---------- ФУНКЦИЯ ПРОВЕРКИ ПРАВ ----------
         function checkAdminRights() {
-            // isAdmin = true если суперадмин или текущий пользователь в списке админов
             if (isSuperAdmin) {
                 isAdmin = true;
             } else if (adminUsers.indexOf(currentUser) !== -1) {
@@ -880,7 +891,6 @@
         // ---------- АДМИН ----------
         function toggleAdmin() {
             if (isSuperAdmin) {
-                // Выход из суперадмина
                 isSuperAdmin = false;
                 isAdmin = false;
                 sessionStorage.removeItem('hw6_superadmin');
@@ -909,7 +919,6 @@
         }
         adminBtn.addEventListener('click', toggleAdmin);
 
-        // Восстановление суперадмина из сессии
         if (sessionStorage.getItem('hw6_superadmin') === 'true') {
             isSuperAdmin = true;
             isAdmin = true;
@@ -917,20 +926,16 @@
             adminLabel.textContent = 'Суперадмин';
             adminPanel.classList.add('visible');
             adminManageGroup.style.display = 'block';
-        } else {
-            // Проверка, является ли текущий пользователь админом (из списка)
-            // Это делается в checkAdminRights после загрузки списка
         }
 
         // ---------- ОБНОВЛЕНИЕ UI АДМИНА ----------
         function updateAdminUI() {
-            // Проверяем права
             if (!isSuperAdmin && adminUsers.indexOf(currentUser) !== -1) {
                 isAdmin = true;
                 adminBtn.classList.add('active');
                 adminLabel.textContent = 'Админ';
                 adminPanel.classList.add('visible');
-                adminManageGroup.style.display = 'none'; // обычные админы не видят управление админами
+                adminManageGroup.style.display = 'none';
             } else if (!isSuperAdmin && !isAdmin) {
                 adminBtn.classList.remove('active');
                 adminLabel.textContent = 'Админ';
@@ -939,11 +944,9 @@
             } else if (isSuperAdmin) {
                 // уже установлено
             }
-            // Если суперадмин, показываем управление админами
             if (isSuperAdmin) {
                 adminManageGroup.style.display = 'block';
             }
-            // Обновляем список админов
             if (adminList) {
                 adminList.innerHTML = 'Текущие админы: ' + (adminUsers.length ? adminUsers.join(', ') : 'нет');
             }
@@ -961,18 +964,29 @@
             document.getElementById('themeToggle').innerHTML = '<i class="fas fa-sun"></i>';
         }
 
-        // ---------- ЗАГРУЗКА ЗАДАНИЙ ----------
-        tasksRef.on('value', function(snapshot) {
-            const data = snapshot.val();
-            if (data) {
-                tasks = Object.entries(data).map(function(entry) {
-                    return { id: entry[0], ...entry[1] };
-                });
-            } else {
-                tasks = [];
-            }
-            render();
-        });
+        // ---------- ЗАГРУЗКА ЗАДАНИЙ (С ЗАГЛУШКОЙ) ----------
+        function loadTasks() {
+            isLoading = true;
+            render(); // покажет "Загрузка заданий..."
+
+            tasksRef.on('value', function(snapshot) {
+                const data = snapshot.val();
+                if (data) {
+                    tasks = Object.entries(data).map(function(entry) {
+                        return { id: entry[0], ...entry[1] };
+                    });
+                } else {
+                    tasks = [];
+                }
+                isLoading = false;
+                render();
+            }, function(error) {
+                isLoading = false;
+                console.error('Ошибка загрузки:', error);
+                alert('Не удалось загрузить данные из Firebase. Проверьте конфиг.');
+                render();
+            });
+        }
 
         // ---------- УВЕДОМЛЕНИЕ ----------
         function showNotification(text, duration) {
@@ -1058,8 +1072,14 @@
             });
         }
 
-        // ---------- РЕНДЕРИНГ ----------
+        // ---------- РЕНДЕРИНГ (С ЗАГЛУШКОЙ) ----------
         function render() {
+            // ЕСЛИ ИДЁТ ЗАГРУЗКА — ПОКАЗЫВАЕМ ЗАГЛУШКУ
+            if (isLoading) {
+                taskListEl.innerHTML = '<div class="loading-state"><i class="fas fa-spinner fa-spin"></i> Загрузка заданий...</div>';
+                return;
+            }
+
             const day = dayFilter.value;
             const subject = subjectFilter.value;
             const today = new Date();
@@ -1080,7 +1100,6 @@
                 return true;
             });
 
-            // Сортировка: сначала закреплённые, потом по дате
             filtered.sort(function(a, b) {
                 if (a.pinned && !b.pinned) return -1;
                 if (!a.pinned && b.pinned) return 1;
@@ -1124,13 +1143,11 @@
                 const likeCount = likes.length;
 
                 let adminButtons = '';
-                // Если пользователь админ или автор задания, показываем кнопки редактирования/удаления
                 if (isAdmin || task.author === currentUser) {
                     adminButtons +=
                         '<button class="btn btn-outline btn-sm editBtn" data-id="' + task.id + '"><i class="fas fa-edit"></i></button>' +
                         '<button class="btn btn-danger btn-sm deleteBtn" data-id="' + task.id + '"><i class="fas fa-trash"></i></button>';
                 }
-                // Кнопка закрепа доступна только админам
                 if (isAdmin) {
                     adminButtons +=
                         '<button class="pin-btn ' + (task.pinned ? 'active' : '') + '" data-id="' + task.id + '" title="Закрепить"><i class="fas fa-thumbtack"></i></button>';
@@ -1170,7 +1187,6 @@
             });
             list.innerHTML = html;
 
-            // Обработчики
             list.querySelectorAll('.like-btn').forEach(function(btn) {
                 btn.addEventListener('click', function(e) {
                     e.stopPropagation();
@@ -1313,7 +1329,7 @@
             showNotification('✅ Статистика обновлена!', 2000);
         });
 
-        // ---------- УПРАВЛЕНИЕ АДМИНАМИ (только суперадмин) ----------
+        // ---------- УПРАВЛЕНИЕ АДМИНАМИ ----------
         adminAddBtn.addEventListener('click', function() {
             if (!isSuperAdmin) return;
             const name = adminAddInput.value.trim();
@@ -1384,7 +1400,6 @@
         function openEditModal(id) {
             const task = tasks.find(function(t) { return t.id === id; });
             if (!task) return;
-            // Права: админ или автор
             if (!isAdmin && task.author !== currentUser) {
                 alert('Вы можете редактировать только свои задания.');
                 return;
@@ -1423,15 +1438,16 @@
         });
 
         // ---------- СТАРТ ----------
-        console.log('🚀 Сайт загружен с управлением админами');
-        // Проверяем права при загрузке
+        console.log('🚀 Сайт загружен с заглушкой загрузки');
         checkAdminRights();
         if (isAdmin) showStats();
         if (isSuperAdmin) {
             adminManageGroup.style.display = 'block';
         }
-        // Обновляем список админов в UI
         updateAdminUI();
+
+        // Загружаем задания (с заглушкой)
+        loadTasks();
     </script>
 </body>
 </html>
