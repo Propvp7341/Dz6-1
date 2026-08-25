@@ -11,7 +11,11 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         body {
             font-family: 'Inter', system-ui, sans-serif;
             background: #f5f7fc;
@@ -612,7 +616,7 @@
             color: #fff;
             padding: 0.6rem 1.5rem;
             border-radius: 40px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
             z-index: 2000;
             font-weight: 500;
             text-align: center;
@@ -761,19 +765,69 @@
             margin-top: 0.4rem;
             flex-wrap: wrap;
         }
+
+        /* Стиль для бейджа счётчика (скрыт по умолчанию) */
+        .chat-badge {
+            background: #ea4335;
+            color: #fff;
+            font-size: 0.6rem;
+            font-weight: 700;
+            padding: 0.05rem 0.45rem;
+            border-radius: 40px;
+            margin-left: 0.2rem;
+            display: none;
+            line-height: 1.2;
+            min-width: 18px;
+            text-align: center;
+        }
+
         @media (max-width: 600px) {
-            body { padding: 0.6rem; }
-            .app-header h1 { font-size: 1.3rem; }
-            .filter-bar { border-radius: 20px; padding: 0.4rem 0.6rem; }
-            .filter-bar label { width: 100%; }
-            .filter-bar .filter-reset { margin-left: 0; }
-            .card { padding: 0.8rem; }
-            .modal-content { padding: 1.2rem; }
-            .task-footer { flex-direction: column; align-items: stretch; gap: 0.3rem; }
-            .task-actions { justify-content: flex-end; }
-            .chat-modal .chat-messages { min-height: 180px; max-height: 250px; }
-            .header-actions .btn { padding: 0.3rem 0.7rem; font-size: 0.75rem; }
-            .admin-panel { padding: 0.8rem; }
+            body {
+                padding: 0.6rem;
+            }
+            .app-header h1 {
+                font-size: 1.3rem;
+            }
+            .filter-bar {
+                border-radius: 20px;
+                padding: 0.4rem 0.6rem;
+            }
+            .filter-bar label {
+                width: 100%;
+            }
+            .filter-bar .filter-reset {
+                margin-left: 0;
+            }
+            .card {
+                padding: 0.8rem;
+            }
+            .modal-content {
+                padding: 1.2rem;
+            }
+            .task-footer {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.3rem;
+            }
+            .task-actions {
+                justify-content: flex-end;
+            }
+            .chat-modal .chat-messages {
+                min-height: 180px;
+                max-height: 250px;
+            }
+            .header-actions .btn {
+                padding: 0.3rem 0.7rem;
+                font-size: 0.75rem;
+            }
+            .admin-panel {
+                padding: 0.8rem;
+            }
+            .chat-badge {
+                font-size: 0.5rem;
+                padding: 0.05rem 0.35rem;
+                min-width: 14px;
+            }
         }
     </style>
 </head>
@@ -792,7 +846,7 @@
 
         <div class="admin-panel" id="adminPanel">
             <h3>🛠 Админ-панель</h3>
-            
+
             <div class="form-group" id="logGroup" style="display:none;">
                 <label>📋 Лог действий</label>
                 <div style="display:flex;gap:0.3rem;flex-wrap:wrap;margin-bottom:0.3rem;">
@@ -958,6 +1012,8 @@
         let allLogs = [];
         let isSending = false;
         let sendTimer = null;
+        let lastReadTimestamp = 0;
+        let unreadCount = 0;
 
         const taskListEl = document.getElementById('taskList');
         const taskCountEl = document.getElementById('taskCount');
@@ -1007,6 +1063,14 @@
         const refreshBannedBtn = document.getElementById('refreshBannedBtn');
         const bannedListContainer = document.getElementById('bannedListContainer');
         const bannedTotalCount = document.getElementById('bannedTotalCount');
+
+        const chatToggleBtn = document.getElementById('chatToggleBtn');
+        const chatModal = document.getElementById('chatModal');
+        const chatMessages = document.getElementById('chatMessages');
+        const chatInput = document.getElementById('chatInput');
+        const chatSendBtn = document.getElementById('chatSendBtn');
+        const chatCloseBtn = document.getElementById('chatCloseBtn');
+        const chatClearBtn = document.getElementById('chatClearBtn');
 
         // ---------- ИНИЦИАЛИЗАЦИЯ FIREBASE ----------
         try {
@@ -1233,8 +1297,12 @@
             let html = '';
             logs.forEach(function(log) {
                 const time = new Date(log.timestamp).toLocaleString('ru', {
-                    day: '2-digit', month: '2-digit', year: 'numeric',
-                    hour: '2-digit', minute: '2-digit', second: '2-digit'
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
                 });
                 html += '<div class="log-entry">' +
                     '<span class="log-time">[' + time + ']</span> ' +
@@ -1252,7 +1320,8 @@
                 const data = snapshot.val();
                 if (!bannedListContainer) return;
                 if (!data) {
-                    bannedListContainer.innerHTML = '<div style="padding:0.4rem;color:#6a7a9a;text-align:center;">Забаненных нет</div>';
+                    bannedListContainer.innerHTML =
+                    '<div style="padding:0.4rem;color:#6a7a9a;text-align:center;">Забаненных нет</div>';
                     if (bannedTotalCount) bannedTotalCount.textContent = '0';
                     return;
                 }
@@ -1406,7 +1475,8 @@
 
         function render() {
             if (isLoading) {
-                taskListEl.innerHTML = '<div class="loading-state"><i class="fas fa-spinner fa-spin"></i> Загрузка заданий...</div>';
+                taskListEl.innerHTML =
+                '<div class="loading-state"><i class="fas fa-spinner fa-spin"></i> Загрузка заданий...</div>';
                 return;
             }
 
@@ -1424,7 +1494,8 @@
                 if (day !== 'all') {
                     const taskDate = new Date(task.date + 'T00:00:00');
                     if (day === 'today' && (taskDate < today || taskDate >= tomorrow)) return false;
-                    if (day === 'tomorrow' && (taskDate < tomorrow || taskDate >= new Date(tomorrow.getTime() + 86400000))) return false;
+                    if (day === 'tomorrow' && (taskDate < tomorrow || taskDate >= new Date(tomorrow.getTime() +
+                            86400000))) return false;
                     if (day === 'week' && (taskDate < today || taskDate >= weekEnd)) return false;
                 }
                 return true;
@@ -1450,13 +1521,14 @@
             let html = '';
             filtered.forEach(function(task) {
                 const taskDate = new Date(task.date + 'T00:00:00');
-                const now = new Date(); now.setHours(0,0,0,0);
+                const now = new Date();
+                now.setHours(0, 0, 0, 0);
                 const isOverdue = !task.done && taskDate < now;
                 const dateStr = task.date.split('-').reverse().join('.');
-                const dayOfWeek = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'][taskDate.getDay()];
+                const dayOfWeek = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'][taskDate.getDay()];
 
                 const author = task.author || 'Аноним';
-                const initials = author.split(' ').map(function(s) { return s[0]; }).join('').toUpperCase().slice(0,2);
+                const initials = author.split(' ').map(function(s) { return s[0]; }).join('').toUpperCase().slice(0, 2);
 
                 let attachHtml = '';
                 if (task.attachment && task.attachment.trim() !== '') {
@@ -1464,7 +1536,8 @@
                     if (/\.(jpg|jpeg|png|gif|webp|svg)$/i.test(url)) {
                         attachHtml = '<div class="task-attachment"><img src="' + url + '" alt="фото" loading="lazy"></div>';
                     } else {
-                        attachHtml = '<div class="task-attachment"><i class="fas fa-paperclip"></i> <a href="' + url + '" target="_blank">Ссылка</a></div>';
+                        attachHtml = '<div class="task-attachment"><i class="fas fa-paperclip"></i> <a href="' + url +
+                            '" target="_blank">Ссылка</a></div>';
                     }
                 }
 
@@ -1475,12 +1548,15 @@
                 let adminButtons = '';
                 if (isAdmin || task.author === currentUser) {
                     adminButtons +=
-                        '<button class="btn btn-outline btn-sm editBtn" data-id="' + task.id + '"><i class="fas fa-edit"></i></button>' +
-                        '<button class="btn btn-danger btn-sm deleteBtn" data-id="' + task.id + '"><i class="fas fa-trash"></i></button>';
+                        '<button class="btn btn-outline btn-sm editBtn" data-id="' + task.id +
+                        '"><i class="fas fa-edit"></i></button>' +
+                        '<button class="btn btn-danger btn-sm deleteBtn" data-id="' + task.id +
+                        '"><i class="fas fa-trash"></i></button>';
                 }
                 if (isAdmin) {
                     adminButtons +=
-                        '<button class="pin-btn ' + (task.pinned ? 'active' : '') + '" data-id="' + task.id + '" title="Закрепить"><i class="fas fa-thumbtack"></i></button>';
+                        '<button class="pin-btn ' + (task.pinned ? 'active' : '') + '" data-id="' + task.id +
+                        '" title="Закрепить"><i class="fas fa-thumbtack"></i></button>';
                 }
 
                 const isBanned = bannedUsers.indexOf(currentUser) !== -1;
@@ -1501,12 +1577,14 @@
                     '<div class="avatar">' + initials + '</div>' +
                     '<div>' +
                     '<span class="author-name">' + author + '</span>' +
-                    '<span class="author-time"> · <i class="far fa-clock"></i> ' + new Date(task.timestamp || task.id).toLocaleString('ru', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'}) +
+                    '<span class="author-time"> · <i class="far fa-clock"></i> ' + new Date(task.timestamp || task.id)
+                    .toLocaleString('ru', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) +
                     '</span>' +
                     '</div>' +
                     '</div>' +
                     '<div class="task-actions">' +
-                    '<button class="like-btn ' + (userLiked ? 'liked' : '') + (isBanned ? ' disabled' : '') + '" data-id="' + task.id + '" ' + (isBanned ? 'style="opacity:0.4;cursor:not-allowed;"' : '') + '>' +
+                    '<button class="like-btn ' + (userLiked ? 'liked' : '') + (isBanned ? ' disabled' : '') +
+                    '" data-id="' + task.id + '" ' + (isBanned ? 'style="opacity:0.4;cursor:not-allowed;"' : '') + '>' +
                     '<i class="fas fa-heart"></i>' +
                     '<span class="like-count">' + likeCount + '</span>' +
                     '</button>' +
@@ -1578,7 +1656,8 @@
             const task = tasks.find(function(t) { return t.id === taskId; });
             if (!task) return;
             tasksRef.child(taskId).update({ pinned: !task.pinned });
-            addLog('Закрепление задания', 'Предмет: ' + task.subject + ' (статус: ' + (!task.pinned ? 'закреплён' : 'откреплён') + ')');
+            addLog('Закрепление задания', 'Предмет: ' + task.subject + ' (статус: ' + (!task.pinned ? 'закреплён' :
+                'откреплён') + ')');
         }
 
         function showStats() {
@@ -1594,7 +1673,8 @@
             let html = '<h4>📊 Статистика класса</h4><table class="stat-table"><tr><th>Ученик</th><th>Заданий</th><th>Лайков</th></tr>';
             const sorted = Object.entries(stats).sort(function(a, b) { return b[1].tasks - a[1].tasks; });
             sorted.forEach(function(entry) {
-                html += '<tr><td>' + entry[0] + '</td><td>' + entry[1].tasks + '</td><td>' + entry[1].likes + '</td></tr>';
+                html += '<tr><td>' + entry[0] + '</td><td>' + entry[1].tasks + '</td><td>' + entry[1].likes +
+                    '</td></tr>';
             });
             html += '</table>';
             adminStats.innerHTML = html;
@@ -1642,7 +1722,7 @@
             if (!isAdmin) return;
             if (!confirm('Удалить все просроченные задания?')) return;
             const today = new Date();
-            today.setHours(0,0,0,0);
+            today.setHours(0, 0, 0, 0);
             let count = 0;
             tasks.forEach(function(task) {
                 const taskDate = new Date(task.date + 'T00:00:00');
@@ -1728,8 +1808,12 @@
                 let text = '=== ЛОГ ДЕЙСТВИЙ ===\n';
                 allLogs.forEach(function(log) {
                     const time = new Date(log.timestamp).toLocaleString('ru', {
-                        day: '2-digit', month: '2-digit', year: 'numeric',
-                        hour: '2-digit', minute: '2-digit', second: '2-digit'
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
                     });
                     text += '[' + time + '] ' + (log.user || 'Система') + ' — ' + log.action;
                     if (log.details) text += ' (' + log.details + ')';
@@ -1829,22 +1913,107 @@
             render();
         });
 
-        // ---------- ЧАТ С МОМЕНТАЛЬНЫМ УДАЛЕНИЕМ ----------
-        const chatToggleBtn = document.getElementById('chatToggleBtn');
-        const chatModal = document.getElementById('chatModal');
-        const chatMessages = document.getElementById('chatMessages');
-        const chatInput = document.getElementById('chatInput');
-        const chatSendBtn = document.getElementById('chatSendBtn');
-        const chatCloseBtn = document.getElementById('chatCloseBtn');
-        const chatClearBtn = document.getElementById('chatClearBtn');
+        // ---------- СЧЁТЧИК НЕПРОЧИТАННЫХ СООБЩЕНИЙ (С СОХРАНЕНИЕМ) ----------
+        // Загружаем сохранённый timestamp из localStorage
+        const savedTimestamp = localStorage.getItem('hw6_lastReadTimestamp');
+        if (savedTimestamp) {
+            lastReadTimestamp = parseInt(savedTimestamp, 10);
+        } else {
+            lastReadTimestamp = Date.now();
+        }
 
+        function updateUnreadCount() {
+            chatRef.orderByChild('timestamp').startAt(lastReadTimestamp + 1).once('value', function(snapshot) {
+                const data = snapshot.val();
+                const badge = document.querySelector('.chat-badge');
+                if (!badge) return;
+                if (!data) {
+                    badge.style.display = 'none';
+                    badge.textContent = '0';
+                    return;
+                }
+                const messages = Object.values(data);
+                const unread = messages.filter(function(msg) {
+                    return msg.author !== currentUser;
+                });
+                unreadCount = unread.length;
+                if (unreadCount > 0) {
+                    badge.style.display = 'inline-block';
+                    badge.textContent = unreadCount;
+                } else {
+                    badge.style.display = 'none';
+                    badge.textContent = '0';
+                }
+            });
+        }
+
+        // Создаём бейдж для кнопки чата (скрытый по умолчанию)
+        const chatBtn = document.getElementById('chatToggleBtn');
+        if (chatBtn) {
+            const badge = document.createElement('span');
+            badge.className = 'chat-badge';
+            badge.textContent = '0';
+            badge.style.display = 'none';
+            chatBtn.appendChild(badge);
+        }
+
+        // Наблюдатель за открытием чата с сохранением
+        const observer = new MutationObserver(function() {
+            if (chatModal.classList.contains('active')) {
+                chatRef.orderByChild('timestamp').startAt(lastReadTimestamp + 1).once('value', function(snapshot) {
+                    const data = snapshot.val();
+                    if (data) {
+                        const updates = {};
+                        Object.keys(data).forEach(function(key) {
+                            if (data[key].author !== currentUser) {
+                                updates[key + '/unread'] = false;
+                            }
+                        });
+                        chatRef.update(updates);
+                    }
+                });
+                lastReadTimestamp = Date.now();
+                localStorage.setItem('hw6_lastReadTimestamp', lastReadTimestamp.toString());
+                const badge = document.querySelector('.chat-badge');
+                if (badge) {
+                    badge.style.display = 'none';
+                    badge.textContent = '0';
+                }
+                unreadCount = 0;
+            }
+        });
+        observer.observe(chatModal, { attributes: true, attributeFilter: ['class'] });
+
+        // Подписка на новые сообщения с сохранением
+        chatRef.orderByChild('timestamp').startAt(lastReadTimestamp + 1).on('child_added', function(snapshot) {
+            const data = snapshot.val();
+            if (!data) return;
+            if (chatModal.classList.contains('active')) {
+                lastReadTimestamp = Date.now();
+                localStorage.setItem('hw6_lastReadTimestamp', lastReadTimestamp.toString());
+                return;
+            }
+            if (data.author === currentUser) return;
+            unreadCount++;
+            const badge = document.querySelector('.chat-badge');
+            if (badge) {
+                badge.style.display = 'inline-block';
+                badge.textContent = unreadCount;
+            }
+        });
+
+        // Устанавливаем начальный timestamp
+        setTimeout(updateUnreadCount, 1000);
+
+        // ---------- ЧАТ С МОМЕНТАЛЬНЫМ УДАЛЕНИЕМ ----------
         function appendChatMessage(data) {
             if (!chatMessages) return;
             if (chatMessages.querySelector('.chat-placeholder')) {
                 chatMessages.innerHTML = '';
             }
             const time = new Date(data.timestamp).toLocaleString('ru', {
-                hour: '2-digit', minute: '2-digit'
+                hour: '2-digit',
+                minute: '2-digit'
             });
             const div = document.createElement('div');
             div.className = 'chat-msg';
@@ -1916,7 +2085,8 @@
         chatToggleBtn.addEventListener('click', function() {
             chatModal.classList.toggle('active');
             if (chatModal.classList.contains('active')) {
-                chatMessages.innerHTML = '<div class="chat-placeholder" style="color:#6a7a9a;text-align:center;padding:0.8rem;">Загрузка...</div>';
+                chatMessages.innerHTML =
+                '<div class="chat-placeholder" style="color:#6a7a9a;text-align:center;padding:0.8rem;">Загрузка...</div>';
                 chatRef.once('value', function(snapshot) {
                     const data = snapshot.val();
                     chatMessages.innerHTML = '';
@@ -1929,10 +2099,12 @@
                             appendChatMessage(msg);
                         });
                     } else {
-                        chatMessages.innerHTML = '<div class="chat-placeholder" style="color:#6a7a9a;text-align:center;padding:0.8rem;">Сообщений пока нет</div>';
+                        chatMessages.innerHTML =
+                            '<div class="chat-placeholder" style="color:#6a7a9a;text-align:center;padding:0.8rem;">Сообщений пока нет</div>';
                     }
                     chatRef.off();
-                    chatRef.orderByChild('timestamp').startAfter(Date.now() - 1000).on('child_added', function(snapshot) {
+                    chatRef.orderByChild('timestamp').startAfter(Date.now() - 1000).on('child_added', function(
+                    snapshot) {
                         const data = snapshot.val();
                         if (!data) return;
                         const existing = chatMessages.querySelector(`[data-id="${snapshot.key}"]`);
@@ -1994,7 +2166,7 @@
         updateChatClearBtn();
 
         // ---------- СТАРТ ----------
-        console.log('🚀 Сайт загружен с моментальным удалением сообщений');
+        console.log('🚀 Сайт загружен с моментальным удалением сообщений и счётчиком непрочитанных');
         checkAdminRights();
         if (isAdmin) showStats();
         if (isSuperAdmin) {
