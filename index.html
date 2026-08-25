@@ -86,7 +86,7 @@
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 0.8rem;
+            gap: 0.5rem;
             margin-bottom: 1.5rem;
             padding-bottom: 0.8rem;
             border-bottom: 1px solid #dce0e8;
@@ -96,7 +96,7 @@
         }
         .app-header h1 {
             font-weight: 600;
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             display: flex;
             align-items: center;
             gap: 0.5rem;
@@ -107,24 +107,25 @@
         .header-actions {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.3rem;
             flex-wrap: wrap;
         }
         .btn {
             display: inline-flex;
             align-items: center;
-            gap: 0.4rem;
-            padding: 0.45rem 1.2rem;
+            gap: 0.3rem;
+            padding: 0.4rem 1rem;
             border-radius: 40px;
             border: 1px solid #c0c8d8;
             background: transparent;
             font-weight: 500;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             cursor: pointer;
             transition: 0.15s;
             font-family: inherit;
             color: #1a1a2e;
             text-decoration: none;
+            white-space: nowrap;
         }
         body.dark .btn {
             color: #eaeef5;
@@ -162,15 +163,16 @@
             background: #2a1a1a;
         }
         .btn-sm {
-            padding: 0.2rem 0.8rem;
+            padding: 0.2rem 0.7rem;
             font-size: 0.75rem;
         }
         .theme-toggle {
             background: none;
             border: none;
-            font-size: 1.4rem;
+            font-size: 1.3rem;
             cursor: pointer;
             color: inherit;
+            padding: 0.2rem 0.4rem;
         }
         .admin-btn {
             border-color: #f0b400;
@@ -191,9 +193,9 @@
         }
         .stat-item {
             background: #eef2f8;
-            padding: 0.2rem 0.9rem;
+            padding: 0.15rem 0.8rem;
             border-radius: 40px;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: #2a2a4a;
         }
         body.dark .stat-item {
@@ -203,19 +205,23 @@
         .filter-bar {
             display: flex;
             flex-wrap: wrap;
-            gap: 0.5rem 1rem;
+            gap: 0.4rem 0.8rem;
             background: #fff;
-            padding: 0.6rem 1.2rem;
+            padding: 0.5rem 1rem;
             border-radius: 60px;
             border: 1px solid #dce0e8;
             margin-bottom: 1.5rem;
             align-items: center;
         }
+        body.dark .filter-bar {
+            background: #1a1a2a;
+            border-color: #2e2e44;
+        }
         .filter-bar label {
             display: flex;
             align-items: center;
-            gap: 0.3rem;
-            font-size: 0.8rem;
+            gap: 0.2rem;
+            font-size: 0.75rem;
             font-weight: 500;
             color: #3a3a5a;
         }
@@ -225,15 +231,20 @@
         .filter-bar select {
             border: 1px solid #d0d8e8;
             border-radius: 40px;
-            padding: 0.2rem 0.8rem;
-            font-size: 0.8rem;
+            padding: 0.1rem 0.6rem;
+            font-size: 0.75rem;
             background: #f8faff;
             font-family: inherit;
             outline: none;
         }
+        body.dark .filter-bar select {
+            background: #2a2a3e;
+            color: #eaeef5;
+            border-color: #3a3a5a;
+        }
         .filter-bar .filter-reset {
             margin-left: auto;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: #6a7a9a;
             cursor: pointer;
             border-bottom: 1px dashed #b0b8d0;
@@ -248,8 +259,8 @@
         }
         .card {
             background: #fff;
-            border-radius: 24px;
-            padding: 1.2rem 1.5rem;
+            border-radius: 20px;
+            padding: 1rem 1.2rem;
             border: 1px solid #e0e6f0;
             transition: 0.2s;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
@@ -271,24 +282,24 @@
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 0.4rem;
+            gap: 0.3rem;
         }
         .task-subject {
             font-weight: 600;
             background: #eef4ff;
-            padding: 0.1rem 0.9rem;
+            padding: 0.05rem 0.8rem;
             border-radius: 40px;
             color: #1a5bb0;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
         }
         body.dark .task-subject {
             background: #1a2a4a;
             color: #8ab4ff;
         }
         .task-date {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             background: #eef2f8;
-            padding: 0.1rem 0.8rem;
+            padding: 0.05rem 0.7rem;
             border-radius: 30px;
             color: #3a4a6a;
         }
@@ -296,20 +307,24 @@
             background: #ffebeb;
             color: #b52a2a;
         }
+        body.dark .task-date.overdue {
+            background: #3a1a1a;
+            color: #ff9a9a;
+        }
         .task-text {
-            margin: 0.6rem 0;
-            font-size: 0.95rem;
-            line-height: 1.5;
+            margin: 0.4rem 0;
+            font-size: 0.9rem;
+            line-height: 1.4;
             word-break: break-word;
         }
         .task-attachment {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            margin: 0.3rem 0 0.6rem;
-            font-size: 0.8rem;
+            gap: 0.4rem;
+            margin: 0.2rem 0 0.4rem;
+            font-size: 0.75rem;
             background: #f4f8ff;
-            padding: 0.2rem 0.9rem;
+            padding: 0.15rem 0.7rem;
             border-radius: 40px;
             border: 1px solid #d0dcf0;
             width: fit-content;
@@ -319,8 +334,8 @@
             border-color: #2a3a5a;
         }
         .task-attachment img {
-            max-height: 120px;
-            border-radius: 12px;
+            max-height: 100px;
+            border-radius: 10px;
             border: 1px solid #d0d8e8;
         }
         .task-attachment a {
@@ -333,8 +348,8 @@
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            margin-top: 0.6rem;
-            padding-top: 0.6rem;
+            margin-top: 0.4rem;
+            padding-top: 0.4rem;
             border-top: 1px solid #e8ecf4;
         }
         body.dark .task-footer {
@@ -343,18 +358,18 @@
         .author-block {
             display: flex;
             align-items: center;
-            gap: 0.6rem;
+            gap: 0.5rem;
         }
         .avatar {
-            width: 32px;
-            height: 32px;
+            width: 28px;
+            height: 28px;
             border-radius: 40px;
             background: #dce4f0;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 600;
-            font-size: 0.7rem;
+            font-size: 0.6rem;
             color: #1a2a4a;
             text-transform: uppercase;
         }
@@ -364,10 +379,10 @@
         }
         .author-name {
             font-weight: 500;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
         .author-time {
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             color: #6a7a9a;
         }
         body.dark .author-time {
@@ -375,26 +390,26 @@
         }
         .task-actions {
             display: flex;
-            gap: 0.3rem;
+            gap: 0.2rem;
             align-items: center;
             flex-wrap: wrap;
         }
         .like-btn {
             background: none;
             border: none;
-            font-size: 1.2rem;
+            font-size: 1rem;
             cursor: pointer;
             color: #8a9ab8;
             transition: 0.15s;
             display: flex;
             align-items: center;
-            gap: 0.2rem;
+            gap: 0.15rem;
         }
         .like-btn.liked {
             color: #e84a5f;
         }
         .like-btn .like-count {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 500;
             color: #5a6a8a;
         }
@@ -407,7 +422,7 @@
         .pin-btn {
             background: none;
             border: none;
-            font-size: 1rem;
+            font-size: 0.9rem;
             cursor: pointer;
             color: #b0b8d0;
             transition: 0.15s;
@@ -438,10 +453,10 @@
         }
         .modal-content {
             background: #fff;
-            border-radius: 32px;
+            border-radius: 28px;
             max-width: 520px;
             width: 90%;
-            padding: 2rem 1.8rem;
+            padding: 1.5rem;
             border: 1px solid #e0e6f0;
             transform: scale(0.95);
             transition: 0.2s;
@@ -451,19 +466,23 @@
         .modal-overlay.active .modal-content {
             transform: scale(1);
         }
+        body.dark .modal-content {
+            background: #1a1a2a;
+            border-color: #2e2e44;
+        }
         .modal-content h2 {
             font-weight: 600;
-            font-size: 1.4rem;
-            margin-bottom: 1.2rem;
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
         }
         .form-group {
-            margin-bottom: 1rem;
+            margin-bottom: 0.8rem;
         }
         .form-group label {
             display: block;
             font-weight: 500;
-            font-size: 0.8rem;
-            margin-bottom: 0.2rem;
+            font-size: 0.75rem;
+            margin-bottom: 0.15rem;
             color: #3a4a6a;
         }
         body.dark .form-group label {
@@ -473,18 +492,25 @@
         .form-group textarea,
         .form-group select {
             width: 100%;
-            padding: 0.6rem 1rem;
+            padding: 0.5rem 0.9rem;
             border: 1px solid #d0d8e8;
             border-radius: 60px;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             background: #f8faff;
             font-family: inherit;
             outline: none;
             transition: 0.1s;
         }
+        body.dark .form-group input,
+        body.dark .form-group textarea,
+        body.dark .form-group select {
+            background: #2a2a3e;
+            color: #eaeef5;
+            border-color: #3a3a5a;
+        }
         .form-group textarea {
-            border-radius: 20px;
-            min-height: 70px;
+            border-radius: 16px;
+            min-height: 60px;
             resize: vertical;
         }
         .form-group input:focus,
@@ -494,32 +520,32 @@
         }
         .form-row {
             display: flex;
-            gap: 1rem;
+            gap: 0.8rem;
             flex-wrap: wrap;
         }
         .form-row .form-group {
-            flex: 1 1 140px;
+            flex: 1 1 120px;
         }
         .modal-actions {
             display: flex;
             justify-content: flex-end;
-            gap: 0.8rem;
-            margin-top: 1.5rem;
+            gap: 0.6rem;
+            margin-top: 1.2rem;
         }
         .empty-state {
             text-align: center;
-            padding: 3rem 1rem;
+            padding: 2rem 1rem;
             color: #6a7a9a;
         }
         .empty-state i {
-            font-size: 3rem;
+            font-size: 2.5rem;
             color: #c0c8d8;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.4rem;
         }
         .footer {
-            margin-top: 2.5rem;
+            margin-top: 2rem;
             text-align: center;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             color: #8a9ab8;
             border-top: 1px solid #e0e6f0;
             padding-top: 1rem;
@@ -530,8 +556,8 @@
         }
         .admin-panel {
             background: #fff;
-            border-radius: 24px;
-            padding: 1.5rem;
+            border-radius: 20px;
+            padding: 1rem 1.2rem;
             border: 1px solid #f0b400;
             margin-bottom: 1.5rem;
             display: none;
@@ -544,25 +570,26 @@
             border-color: #f0b400;
         }
         .admin-panel h3 {
-            margin-bottom: 1rem;
+            margin-bottom: 0.8rem;
             color: #f0b400;
+            font-size: 1.1rem;
         }
         .admin-panel .form-group {
-            margin-bottom: 0.8rem;
+            margin-bottom: 0.6rem;
         }
         .admin-panel .btn {
-            margin-right: 0.5rem;
-            margin-bottom: 0.3rem;
+            margin-right: 0.3rem;
+            margin-bottom: 0.2rem;
         }
         .admin-panel .stat-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.85rem;
-            margin-top: 0.5rem;
+            font-size: 0.8rem;
+            margin-top: 0.4rem;
         }
         .admin-panel .stat-table th,
         .admin-panel .stat-table td {
-            padding: 0.3rem 0.6rem;
+            padding: 0.2rem 0.4rem;
             border: 1px solid #dce0e8;
             text-align: left;
         }
@@ -583,7 +610,7 @@
             transform: translateX(-50%);
             background: #1a73e8;
             color: #fff;
-            padding: 0.8rem 2rem;
+            padding: 0.6rem 1.5rem;
             border-radius: 40px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.2);
             z-index: 2000;
@@ -593,6 +620,7 @@
             opacity: 0;
             transition: 0.3s;
             pointer-events: none;
+            font-size: 0.9rem;
         }
         body.dark .notification {
             background: #1a2a4a;
@@ -608,17 +636,17 @@
         }
         .loading-state {
             text-align: center;
-            padding: 3rem 1rem;
+            padding: 2rem 1rem;
             color: #6a7a9a;
         }
         .loading-state i {
-            font-size: 2rem;
-            margin-right: 0.5rem;
+            font-size: 1.8rem;
+            margin-right: 0.4rem;
         }
         .log-entry {
-            padding: 0.2rem 0.5rem;
+            padding: 0.15rem 0.4rem;
             border-bottom: 1px solid #2a2a40;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-family: monospace;
             color: #b0b8d0;
         }
@@ -634,9 +662,9 @@
         .banned-item {
             display: flex;
             justify-content: space-between;
-            padding: 0.3rem 0.5rem;
+            padding: 0.2rem 0.4rem;
             border-bottom: 1px solid #2a2a40;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             align-items: center;
         }
         .banned-item .banned-name {
@@ -644,8 +672,8 @@
             font-weight: 500;
         }
         .banned-item .unban-btn {
-            padding: 0.1rem 0.6rem;
-            font-size: 0.7rem;
+            padding: 0.05rem 0.5rem;
+            font-size: 0.65rem;
             border-radius: 30px;
             border: 1px solid #ea4335;
             background: transparent;
@@ -657,16 +685,95 @@
             background: #ea4335;
             color: #fff;
         }
+
+        /* === СТИЛИ ДЛЯ ЧАТА === */
+        .chat-msg {
+            padding: 0.3rem 0.5rem;
+            border-bottom: 1px solid #1a1a2a;
+            font-size: 0.85rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+        .chat-msg .msg-author {
+            color: #f0b400;
+            font-weight: 600;
+        }
+        .chat-msg .msg-text {
+            color: #b0b8d0;
+        }
+        .chat-msg .msg-time {
+            color: #6a7a9a;
+            font-size: 0.65rem;
+            margin-left: 0.4rem;
+        }
+        .chat-msg .delete-msg-btn {
+            background: none;
+            border: none;
+            color: #8a8aa0;
+            cursor: pointer;
+            font-size: 0.85rem;
+            padding: 0.1rem 0.3rem;
+            transition: 0.2s;
+            border-radius: 30px;
+        }
+        .chat-msg .delete-msg-btn:hover {
+            color: #ea4335;
+            background: rgba(234, 67, 53, 0.1);
+        }
+        .chat-msg.deleting {
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+        .chat-modal .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            border: 1px solid #2a2a44;
+            border-radius: 14px;
+            padding: 0.3rem;
+            background: #0d0d1a;
+            min-height: 250px;
+            max-height: 350px;
+        }
+        .chat-modal .chat-input-row {
+            display: flex;
+            gap: 0.4rem;
+            margin-top: 0.6rem;
+        }
+        .chat-modal .chat-input-row input {
+            flex: 1;
+            padding: 0.4rem 0.8rem;
+            border-radius: 60px;
+            border: 1px solid #3a3a5a;
+            background: #22223a;
+            color: #eaeef5;
+            font-family: inherit;
+            outline: none;
+            font-size: 0.85rem;
+        }
+        .chat-modal .chat-input-row input:focus {
+            border-color: #1a73e8;
+        }
+        .chat-modal .chat-actions {
+            display: flex;
+            gap: 0.4rem;
+            margin-top: 0.4rem;
+            flex-wrap: wrap;
+        }
         @media (max-width: 600px) {
-            body { padding: 0.8rem; }
-            .app-header h1 { font-size: 1.4rem; }
-            .filter-bar { border-radius: 20px; padding: 0.6rem; }
+            body { padding: 0.6rem; }
+            .app-header h1 { font-size: 1.3rem; }
+            .filter-bar { border-radius: 20px; padding: 0.4rem 0.6rem; }
             .filter-bar label { width: 100%; }
             .filter-bar .filter-reset { margin-left: 0; }
-            .card { padding: 1rem; }
-            .modal-content { padding: 1.5rem; }
-            .task-footer { flex-direction: column; align-items: stretch; gap: 0.5rem; }
+            .card { padding: 0.8rem; }
+            .modal-content { padding: 1.2rem; }
+            .task-footer { flex-direction: column; align-items: stretch; gap: 0.3rem; }
             .task-actions { justify-content: flex-end; }
+            .chat-modal .chat-messages { min-height: 180px; max-height: 250px; }
+            .header-actions .btn { padding: 0.3rem 0.7rem; font-size: 0.75rem; }
+            .admin-panel { padding: 0.8rem; }
         }
     </style>
 </head>
@@ -676,8 +783,9 @@
             <h1><i class="fas fa-home"></i> 6-1 · ДЗ</h1>
             <div class="header-actions">
                 <span class="stat-item" id="taskCount">0</span>
-                <button class="btn btn-primary" id="addBtn"><i class="fas fa-plus"></i> Добавить</button>
+                <button class="btn btn-primary btn-sm" id="addBtn"><i class="fas fa-plus"></i> Добавить</button>
                 <button class="btn btn-outline btn-sm admin-btn" id="adminBtn"><i class="fas fa-lock"></i> <span id="adminLabel">Админ</span></button>
+                <button class="btn btn-outline btn-sm" id="chatToggleBtn"><i class="fas fa-comment"></i> Чат</button>
                 <button class="theme-toggle" id="themeToggle"><i class="fas fa-moon"></i></button>
             </div>
         </header>
@@ -687,55 +795,53 @@
             
             <div class="form-group" id="logGroup" style="display:none;">
                 <label>📋 Лог действий</label>
-                <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.5rem;">
+                <div style="display:flex;gap:0.3rem;flex-wrap:wrap;margin-bottom:0.3rem;">
                     <button class="btn btn-outline btn-sm" id="refreshLogsBtn"><i class="fas fa-sync-alt"></i> Обновить</button>
                     <button class="btn btn-danger btn-sm" id="clearLogsBtn"><i class="fas fa-trash"></i> Очистить</button>
                     <button class="btn btn-success btn-sm" id="exportLogsBtn"><i class="fas fa-download"></i> Экспорт</button>
                 </div>
-                <div id="logContainer" style="max-height:300px;overflow-y:auto;border:1px solid #2a2a40;border-radius:12px;background:#0d0d1a;padding:0.3rem 0;"></div>
-                <div style="margin-top:0.3rem;font-size:0.7rem;color:#6a7a9a;">Всего записей: <span id="logTotalCount">0</span></div>
+                <div id="logContainer" style="max-height:250px;overflow-y:auto;border:1px solid #2a2a40;border-radius:12px;background:#0d0d1a;padding:0.2rem 0;"></div>
+                <div style="margin-top:0.2rem;font-size:0.65rem;color:#6a7a9a;">Всего записей: <span id="logTotalCount">0</span></div>
             </div>
 
             <div class="form-group" id="bannedListGroup" style="display:none;">
                 <label>🚫 Забаненные пользователи</label>
-                <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.5rem;">
+                <div style="display:flex;gap:0.3rem;flex-wrap:wrap;margin-bottom:0.3rem;">
                     <button class="btn btn-outline btn-sm" id="refreshBannedBtn"><i class="fas fa-sync-alt"></i> Обновить</button>
                 </div>
-                <div id="bannedListContainer" style="max-height:200px;overflow-y:auto;border:1px solid #2a2a40;border-radius:12px;background:#0d0d1a;padding:0.3rem 0;">
-                    <div style="padding:0.5rem;color:#6a7a9a;text-align:center;">Загрузка...</div>
-                </div>
-                <div style="margin-top:0.3rem;font-size:0.7rem;color:#6a7a9a;">Всего: <span id="bannedTotalCount">0</span></div>
+                <div id="bannedListContainer" style="max-height:150px;overflow-y:auto;border:1px solid #2a2a40;border-radius:12px;background:#0d0d1a;padding:0.2rem 0;"></div>
+                <div style="margin-top:0.2rem;font-size:0.65rem;color:#6a7a9a;">Всего: <span id="bannedTotalCount">0</span></div>
             </div>
 
             <div class="form-group">
                 <label>Уведомление для всех</label>
-                <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
-                    <input type="text" id="adminNotifyInput" placeholder="Текст уведомления" style="flex:1;">
-                    <button class="btn btn-primary" id="adminNotifyBtn"><i class="fas fa-bell"></i> Отправить</button>
+                <div style="display:flex;gap:0.3rem;flex-wrap:wrap;">
+                    <input type="text" id="adminNotifyInput" placeholder="Текст уведомления" style="flex:1;padding:0.4rem 0.8rem;border-radius:60px;border:1px solid #3a3a5a;background:#22223a;color:#eaeef5;font-family:inherit;outline:none;">
+                    <button class="btn btn-primary btn-sm" id="adminNotifyBtn"><i class="fas fa-bell"></i> Отправить</button>
                 </div>
             </div>
             <div class="form-group">
                 <label>Бан пользователя</label>
-                <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
-                    <input type="text" id="adminBanInput" placeholder="Имя пользователя" style="flex:1;">
-                    <button class="btn btn-danger" id="adminBanBtn"><i class="fas fa-ban"></i> Забанить</button>
-                    <button class="btn btn-outline" id="adminUnbanBtn"><i class="fas fa-undo"></i> Разбанить</button>
+                <div style="display:flex;gap:0.3rem;flex-wrap:wrap;">
+                    <input type="text" id="adminBanInput" placeholder="Имя пользователя" style="flex:1;padding:0.4rem 0.8rem;border-radius:60px;border:1px solid #3a3a5a;background:#22223a;color:#eaeef5;font-family:inherit;outline:none;">
+                    <button class="btn btn-danger btn-sm" id="adminBanBtn"><i class="fas fa-ban"></i> Забанить</button>
+                    <button class="btn btn-outline btn-sm" id="adminUnbanBtn"><i class="fas fa-undo"></i> Разбанить</button>
                 </div>
             </div>
             <div class="form-group" id="adminManageGroup" style="display:none;">
                 <label>Управление админами (только суперадмин)</label>
-                <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
-                    <input type="text" id="adminAddInput" placeholder="Имя нового админа" style="flex:1;">
-                    <button class="btn btn-primary" id="adminAddBtn"><i class="fas fa-user-plus"></i> Назначить</button>
-                    <button class="btn btn-danger" id="adminRemoveBtn"><i class="fas fa-user-minus"></i> Удалить</button>
+                <div style="display:flex;gap:0.3rem;flex-wrap:wrap;">
+                    <input type="text" id="adminAddInput" placeholder="Имя нового админа" style="flex:1;padding:0.4rem 0.8rem;border-radius:60px;border:1px solid #3a3a5a;background:#22223a;color:#eaeef5;font-family:inherit;outline:none;">
+                    <button class="btn btn-primary btn-sm" id="adminAddBtn"><i class="fas fa-user-plus"></i> Назначить</button>
+                    <button class="btn btn-danger btn-sm" id="adminRemoveBtn"><i class="fas fa-user-minus"></i> Удалить</button>
                 </div>
-                <div id="adminList" style="margin-top:0.5rem;font-size:0.85rem;color:#6a7a9a;"></div>
+                <div id="adminList" style="margin-top:0.3rem;font-size:0.8rem;color:#6a7a9a;"></div>
             </div>
             <div class="form-group">
-                <button class="btn btn-danger" id="adminClearOldBtn"><i class="fas fa-trash"></i> Удалить все просроченные</button>
-                <button class="btn btn-outline" id="adminRefreshStatsBtn"><i class="fas fa-chart-bar"></i> Обновить статистику</button>
+                <button class="btn btn-danger btn-sm" id="adminClearOldBtn"><i class="fas fa-trash"></i> Удалить просроченные</button>
+                <button class="btn btn-outline btn-sm" id="adminRefreshStatsBtn"><i class="fas fa-chart-bar"></i> Обновить статистику</button>
             </div>
-            <div id="adminStats" style="margin-top:0.5rem;font-size:0.85rem;"></div>
+            <div id="adminStats" style="margin-top:0.3rem;font-size:0.8rem;"></div>
         </div>
 
         <div class="filter-bar">
@@ -767,7 +873,7 @@
             <span class="filter-reset" id="resetFilters"><i class="fas fa-undo-alt"></i> Сбросить</span>
         </div>
 
-        <div id="status" style="text-align:center;margin-bottom:1rem;font-weight:500;color:#1a73e8;">Подключение...</div>
+        <div id="status" style="text-align:center;margin-bottom:0.8rem;font-weight:500;font-size:0.85rem;color:#1a73e8;">Подключение...</div>
         <div class="task-list" id="taskList"></div>
 
         <div class="footer">
@@ -806,9 +912,26 @@
                     <button type="button" class="btn btn-outline" id="cancelModal">Отмена</button>
                     <button type="button" class="btn btn-primary" id="saveBtn"><i class="fas fa-check"></i> Сохранить</button>
                 </div>
-                <div id="sendStatus" style="margin-top:0.5rem;font-size:0.85rem;text-align:center;color:#34a853;"></div>
-                <div id="saveStatus" style="margin-top:0.3rem;font-size:0.85rem;text-align:center;"></div>
+                <div id="sendStatus" style="margin-top:0.3rem;font-size:0.8rem;text-align:center;color:#34a853;"></div>
+                <div id="saveStatus" style="margin-top:0.2rem;font-size:0.8rem;text-align:center;"></div>
             </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay chat-modal" id="chatModal">
+        <div class="modal-content" style="max-width:560px;max-height:80vh;display:flex;flex-direction:column;padding:1rem;">
+            <h2 style="margin-bottom:0.6rem;font-size:1.1rem;">💬 Чат класса</h2>
+            <div class="chat-messages" id="chatMessages">
+                <div style="color:#6a7a9a;text-align:center;padding:0.8rem;">Загрузка сообщений...</div>
+            </div>
+            <div class="chat-input-row">
+                <input type="text" id="chatInput" placeholder="Введите сообщение...">
+                <button class="btn btn-primary btn-sm" id="chatSendBtn"><i class="fas fa-paper-plane"></i></button>
+            </div>
+            <div class="chat-actions">
+                <button class="btn btn-outline btn-sm" id="chatCloseBtn">Закрыть</button>
+                <button class="btn btn-danger btn-sm" id="chatClearBtn" style="display:none;"><i class="fas fa-trash"></i> Очистить</button>
+            </div>
         </div>
     </div>
 
@@ -826,12 +949,10 @@
             appId: "1:338642525342:web:bdf14ac6874ebf49dbfa5"
         };
 
-        // ---------- TELEGRAM (ПРОКСИ) ----------
         const BOT_TOKEN = '8274411877:AAE94dt9DOFLXxuer5XSCpch3sZzNkj61UM';
         const CHAT_ID = '-1002883795807';
         const TELEGRAM_API_URL = 'https://tg.i-c-a.su/bot' + BOT_TOKEN + '/sendMessage';
 
-        // ---------- ПЕРЕМЕННЫЕ ----------
         let tasks = [];
         let currentUser = '';
         let isAdmin = false;
@@ -845,7 +966,6 @@
         let isSending = false;
         let sendTimer = null;
 
-        // DOM
         const taskListEl = document.getElementById('taskList');
         const taskCountEl = document.getElementById('taskCount');
         const footerCountEl = document.getElementById('footerCount');
@@ -912,6 +1032,8 @@
         const bannedRef = db.ref('banned');
         const adminsRef = db.ref('admins');
         const logsRef = db.ref('logs');
+        const notifRef = db.ref('notifications');
+        const chatRef = db.ref('chat');
 
         // ---------- ЗАГРУЗКА ИМЕНИ ----------
         const savedName = localStorage.getItem('hw6_userName');
@@ -950,7 +1072,6 @@
             render();
         });
 
-        // ---------- ФУНКЦИЯ ПРОВЕРКИ ПРАВ ----------
         function checkAdminRights() {
             if (isSuperAdmin) {
                 isAdmin = true;
@@ -962,7 +1083,6 @@
             updateAdminUI();
         }
 
-        // ---------- АДМИН ----------
         function toggleAdmin() {
             if (isSuperAdmin) {
                 isSuperAdmin = false;
@@ -1011,7 +1131,6 @@
             bannedListGroup.style.display = 'block';
         }
 
-        // ---------- ОБНОВЛЕНИЕ UI АДМИНА ----------
         function updateAdminUI() {
             if (!isSuperAdmin && adminUsers.indexOf(currentUser) !== -1) {
                 isAdmin = true;
@@ -1038,7 +1157,6 @@
             }
         }
 
-        // ---------- ТЕМА ----------
         document.getElementById('themeToggle').addEventListener('click', function() {
             document.body.classList.toggle('dark');
             const dark = document.body.classList.contains('dark');
@@ -1050,7 +1168,6 @@
             document.getElementById('themeToggle').innerHTML = '<i class="fas fa-sun"></i>';
         }
 
-        // ---------- ЗАГРУЗКА ЗАДАНИЙ ----------
         function loadTasks() {
             isLoading = true;
             render();
@@ -1074,7 +1191,6 @@
             });
         }
 
-        // ---------- УВЕДОМЛЕНИЕ ----------
         function showNotification(text, duration) {
             duration = duration || 5000;
             notificationEl.textContent = text;
@@ -1085,7 +1201,6 @@
             }, duration);
         }
 
-        // ---------- ДОБАВЛЕНИЕ ЛОГА ----------
         function addLog(action, details) {
             if (!isSuperAdmin) return;
             const logData = {
@@ -1099,7 +1214,6 @@
             });
         }
 
-        // ---------- ЗАГРУЗКА ЛОГОВ ----------
         function loadLogs() {
             if (!isSuperAdmin) return;
             logsRef.orderByChild('timestamp').limitToLast(200).once('value', function(snapshot) {
@@ -1112,18 +1226,18 @@
                 } else {
                     allLogs = [];
                     logTotalCount.textContent = 0;
-                    logContainer.innerHTML = '<div style="padding:0.5rem;color:#6a7a9a;text-align:center;">Логов пока нет</div>';
+                    logContainer.innerHTML = '<div style="padding:0.4rem;color:#6a7a9a;text-align:center;">Логов пока нет</div>';
                 }
             }).catch(function(e) {
                 console.warn('Ошибка загрузки логов:', e);
-                logContainer.innerHTML = '<div style="padding:0.5rem;color:#ea4335;text-align:center;">Ошибка загрузки логов</div>';
+                logContainer.innerHTML = '<div style="padding:0.4rem;color:#ea4335;text-align:center;">Ошибка загрузки логов</div>';
             });
         }
 
         function renderLogs(logs) {
             if (!logContainer) return;
             if (!logs || logs.length === 0) {
-                logContainer.innerHTML = '<div style="padding:0.5rem;color:#6a7a9a;text-align:center;">Логов пока нет</div>';
+                logContainer.innerHTML = '<div style="padding:0.4rem;color:#6a7a9a;text-align:center;">Логов пока нет</div>';
                 return;
             }
             let html = '';
@@ -1142,14 +1256,13 @@
             logContainer.innerHTML = html;
         }
 
-        // ---------- ЗАГРУЗКА СПИСКА ЗАБАНЕННЫХ ----------
         function loadBannedList() {
             if (!isSuperAdmin) return;
             bannedRef.on('value', function(snapshot) {
                 const data = snapshot.val();
                 if (!bannedListContainer) return;
                 if (!data) {
-                    bannedListContainer.innerHTML = '<div style="padding:0.5rem;color:#6a7a9a;text-align:center;">Забаненных нет</div>';
+                    bannedListContainer.innerHTML = '<div style="padding:0.4rem;color:#6a7a9a;text-align:center;">Забаненных нет</div>';
                     if (bannedTotalCount) bannedTotalCount.textContent = '0';
                     return;
                 }
@@ -1187,7 +1300,6 @@
             });
         }
 
-        // ---------- ОТПРАВКА В TELEGRAM ----------
         function sendToTelegram(message) {
             return fetch(TELEGRAM_API_URL, {
                 method: 'POST',
@@ -1196,7 +1308,6 @@
             }).then(function(r) { return r.json(); });
         }
 
-        // ---------- СОХРАНЕНИЕ (С ЗАЩИТОЙ ОТ СПАМА 15 СЕКУНД) ----------
         function saveTask() {
             const subject = document.getElementById('formSubject').value.trim();
             const text = document.getElementById('formText').value.trim();
@@ -1255,7 +1366,7 @@
                 saveStatusEl.style.color = '#34a853';
                 const saveBtn = document.getElementById('saveBtn');
                 if (!isNew) {
-                    setTimeout(function() { closeModal(); }, 1000);
+                    setTimeout(function() { closeModal(); }, 800);
                 } else {
                     saveStatusEl.textContent = '✅ Отправлено!';
                     document.getElementById('sendStatus').textContent = '⏳ Подождите 15с перед следующим';
@@ -1279,7 +1390,7 @@
                             document.getElementById('sendStatus').textContent = '⏳ Подождите ' + seconds + 'с';
                         }
                     }, 1000);
-                    setTimeout(function() { closeModal(); }, 1000);
+                    setTimeout(function() { closeModal(); }, 800);
                 }
                 if (isNew) {
                     const msg = '📚 <b>Новое задание в 6-1!</b>\n' +
@@ -1303,7 +1414,6 @@
             });
         }
 
-        // ---------- РЕНДЕРИНГ ----------
         function render() {
             if (isLoading) {
                 taskListEl.innerHTML = '<div class="loading-state"><i class="fas fa-spinner fa-spin"></i> Загрузка заданий...</div>';
@@ -1452,7 +1562,6 @@
             });
         }
 
-        // ---------- ЛАЙК ----------
         function toggleLike(taskId) {
             if (bannedUsers.indexOf(currentUser) !== -1) {
                 showNotification('❌ Вы забанены и не можете ставить лайки!', 3000);
@@ -1474,7 +1583,6 @@
             addLog(action, 'Задание: ' + task.subject + ', автор: ' + task.author);
         }
 
-        // ---------- ЗАКРЕП ----------
         function togglePin(taskId) {
             if (!isAdmin) return;
             const task = tasks.find(function(t) { return t.id === taskId; });
@@ -1483,7 +1591,6 @@
             addLog('Закрепление задания', 'Предмет: ' + task.subject + ' (статус: ' + (!task.pinned ? 'закреплён' : 'откреплён') + ')');
         }
 
-        // ---------- СТАТИСТИКА ----------
         function showStats() {
             if (!isAdmin) return;
             const stats = {};
@@ -1503,14 +1610,21 @@
             adminStats.innerHTML = html;
         }
 
-        // ---------- АДМИН-ФУНКЦИИ ----------
         adminNotifyBtn.addEventListener('click', function() {
             if (!isAdmin) return;
             const text = adminNotifyInput.value.trim();
             if (!text) { alert('Введите текст уведомления!'); return; }
-            showNotification('📢 ' + text, 8000);
-            adminNotifyInput.value = '';
-            addLog('Отправка уведомления', 'Текст: ' + text);
+            notifRef.push({
+                text: text,
+                timestamp: Date.now(),
+                author: currentUser || 'Админ'
+            }).then(function() {
+                adminNotifyInput.value = '';
+                showNotification('📢 ' + text, 10000);
+                addLog('Отправка уведомления', 'Текст: ' + text);
+            }).catch(function(e) {
+                alert('Ошибка: ' + e.message);
+            });
         });
 
         adminBanBtn.addEventListener('click', function() {
@@ -1575,7 +1689,6 @@
             addLog('Обновление статистики', '');
         });
 
-        // ---------- УПРАВЛЕНИЕ АДМИНАМИ ----------
         adminAddBtn.addEventListener('click', function() {
             if (!isSuperAdmin) return;
             const name = adminAddInput.value.trim();
@@ -1612,7 +1725,6 @@
             adminAddInput.value = '';
         });
 
-        // ---------- ОБРАБОТЧИКИ ЛОГОВ ----------
         if (refreshLogsBtn) {
             refreshLogsBtn.addEventListener('click', function() {
                 loadLogs();
@@ -1659,7 +1771,6 @@
             });
         }
 
-        // ---------- ОБРАБОТЧИК СПИСКА БАНОВ ----------
         if (refreshBannedBtn) {
             refreshBannedBtn.addEventListener('click', function() {
                 loadBannedList();
@@ -1667,7 +1778,6 @@
             });
         }
 
-        // ---------- МОДАЛКА ----------
         function openModal(title, data) {
             document.getElementById('sendStatus').textContent = '';
             const saveBtn = document.getElementById('saveBtn');
@@ -1718,7 +1828,6 @@
             openModal('Редактировать задание', task);
         }
 
-        // ---------- ОБРАБОТЧИКИ ----------
         addBtn.addEventListener('click', openAddModal);
         cancelModalBtn.addEventListener('click', closeModal);
         modalOverlay.addEventListener('click', function(e) {
@@ -1739,7 +1848,6 @@
             });
         });
 
-        // ---------- ФИЛЬТРЫ ----------
         dayFilter.addEventListener('change', render);
         subjectFilter.addEventListener('change', render);
         resetFiltersBtn.addEventListener('click', function() {
@@ -1748,8 +1856,184 @@
             render();
         });
 
+        // ---------- ГЛОБАЛЬНЫЕ УВЕДОМЛЕНИЯ ----------
+        let lastNotifId = null;
+        notifRef.orderByChild('timestamp').limitToLast(1).on('child_added', function(snapshot) {
+            const data = snapshot.val();
+            const notifId = snapshot.key;
+            if (lastNotifId === notifId) return;
+            lastNotifId = notifId;
+            if (data && data.text) {
+                showNotification('📢 ' + data.text, 10000);
+            }
+        });
+
+        // ---------- ЧАТ С МОМЕНТАЛЬНЫМ УДАЛЕНИЕМ ----------
+        const chatToggleBtn = document.getElementById('chatToggleBtn');
+        const chatModal = document.getElementById('chatModal');
+        const chatMessages = document.getElementById('chatMessages');
+        const chatInput = document.getElementById('chatInput');
+        const chatSendBtn = document.getElementById('chatSendBtn');
+        const chatCloseBtn = document.getElementById('chatCloseBtn');
+        const chatClearBtn = document.getElementById('chatClearBtn');
+
+        function appendChatMessage(data) {
+            if (!chatMessages) return;
+            if (chatMessages.querySelector('.chat-placeholder')) {
+                chatMessages.innerHTML = '';
+            }
+            const time = new Date(data.timestamp).toLocaleString('ru', {
+                hour: '2-digit', minute: '2-digit'
+            });
+            const div = document.createElement('div');
+            div.className = 'chat-msg';
+            div.dataset.id = data.id || '';
+            const isBanned = bannedUsers.indexOf(currentUser) !== -1;
+            const canDelete = !isBanned && (isAdmin || data.author === currentUser);
+            div.innerHTML = `
+                <div>
+                    <span class="msg-author">${data.author || 'Аноним'}</span>
+                    <span class="msg-text">: ${data.text}</span>
+                    <span class="msg-time">${time}</span>
+                </div>
+                ${canDelete ? `<button class="delete-msg-btn" data-id="${data.id || ''}"><i class="fas fa-trash-alt"></i></button>` : ''}
+            `;
+            chatMessages.appendChild(div);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            div.querySelector('.delete-msg-btn')?.addEventListener('click', function() {
+                const id = this.dataset.id;
+                if (!id) return;
+                if (!confirm('Удалить сообщение?')) return;
+                div.style.transition = 'all 0.3s ease';
+                div.style.opacity = '0';
+                div.style.transform = 'translateX(-20px)';
+                setTimeout(() => {
+                    chatRef.child(id).remove()
+                        .then(() => {
+                            if (div.parentNode) {
+                                div.remove();
+                            }
+                            showNotification('🗑️ Сообщение удалено', 1500);
+                        })
+                        .catch(function(e) {
+                            alert('Ошибка удаления: ' + e.message);
+                            div.style.opacity = '1';
+                            div.style.transform = 'translateX(0)';
+                        });
+                }, 300);
+            });
+        }
+
+        function sendChatMessage() {
+            if (!currentUser) {
+                alert('Пожалуйста, войдите в систему');
+                return;
+            }
+            if (bannedUsers.indexOf(currentUser) !== -1) {
+                alert('❌ Вы забанены и не можете писать в чат!');
+                return;
+            }
+            const text = chatInput.value.trim();
+            if (!text) return;
+            chatRef.push({
+                text: text,
+                author: currentUser,
+                timestamp: Date.now()
+            }).then(function() {
+                chatInput.value = '';
+            }).catch(function(e) {
+                alert('Ошибка: ' + e.message);
+            });
+        }
+
+        chatSendBtn.addEventListener('click', sendChatMessage);
+        chatInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') sendChatMessage();
+        });
+
+        chatToggleBtn.addEventListener('click', function() {
+            chatModal.classList.toggle('active');
+            if (chatModal.classList.contains('active')) {
+                chatMessages.innerHTML = '<div class="chat-placeholder" style="color:#6a7a9a;text-align:center;padding:0.8rem;">Загрузка...</div>';
+                chatRef.once('value', function(snapshot) {
+                    const data = snapshot.val();
+                    chatMessages.innerHTML = '';
+                    if (data) {
+                        const messages = Object.entries(data).map(function(entry) {
+                            return { id: entry[0], ...entry[1] };
+                        });
+                        messages.sort(function(a, b) { return a.timestamp - b.timestamp; });
+                        messages.forEach(function(msg) {
+                            appendChatMessage(msg);
+                        });
+                    } else {
+                        chatMessages.innerHTML = '<div class="chat-placeholder" style="color:#6a7a9a;text-align:center;padding:0.8rem;">Сообщений пока нет</div>';
+                    }
+                    chatRef.off();
+                    chatRef.orderByChild('timestamp').startAfter(Date.now() - 1000).on('child_added', function(snapshot) {
+                        const data = snapshot.val();
+                        if (!data) return;
+                        const existing = chatMessages.querySelector(`[data-id="${snapshot.key}"]`);
+                        if (!existing) {
+                            appendChatMessage({ id: snapshot.key, ...data });
+                        }
+                    });
+                    chatRef.on('child_removed', function(snapshot) {
+                        const removedId = snapshot.key;
+                        const msgEl = chatMessages.querySelector(`[data-id="${removedId}"]`);
+                        if (msgEl) {
+                            msgEl.style.transition = 'all 0.3s ease';
+                            msgEl.style.opacity = '0';
+                            msgEl.style.transform = 'translateX(-20px)';
+                            setTimeout(() => {
+                                if (msgEl.parentNode) {
+                                    msgEl.remove();
+                                }
+                            }, 300);
+                        }
+                    });
+                });
+            }
+        });
+
+        chatCloseBtn.addEventListener('click', function() {
+            chatModal.classList.remove('active');
+        });
+
+        function updateChatClearBtn() {
+            if (isSuperAdmin) {
+                chatClearBtn.style.display = 'inline-flex';
+            } else {
+                chatClearBtn.style.display = 'none';
+            }
+        }
+
+        chatClearBtn.addEventListener('click', function() {
+            if (!isSuperAdmin) {
+                alert('Только суперадмин может очистить чат!');
+                return;
+            }
+            if (!confirm('Очистить весь чат?')) return;
+            chatRef.remove().then(function() {
+                chatMessages.innerHTML = '<div style="color:#6a7a9a;text-align:center;padding:0.8rem;">Чат очищен</div>';
+                showNotification('Чат очищен', 3000);
+            }).catch(function(e) {
+                alert('Ошибка: ' + e.message);
+            });
+        });
+
+        const originalUpdateAdminUI = updateAdminUI;
+        if (originalUpdateAdminUI) {
+            window.updateAdminUI = function() {
+                originalUpdateAdminUI();
+                updateChatClearBtn();
+            };
+        }
+        updateChatClearBtn();
+
         // ---------- СТАРТ ----------
-        console.log('🚀 Сайт загружен с логами, списком банов и защитой от спама');
+        console.log('🚀 Сайт загружен с моментальным удалением сообщений');
         checkAdminRights();
         if (isAdmin) showStats();
         if (isSuperAdmin) {
