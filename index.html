@@ -11,7 +11,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
-        /* ---------- ВСЕ СТИЛИ БЕЗ ИЗМЕНЕНИЙ ---------- */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Inter', system-ui, sans-serif;
@@ -607,8 +606,6 @@
             opacity: 0;
             transform: translateX(-50%) translateY(-20px);
         }
-
-        /* НОВАЯ ЗАГЛУШКА ЗАГРУЗКИ */
         .loading-state {
             text-align: center;
             padding: 3rem 1rem;
@@ -618,7 +615,48 @@
             font-size: 2rem;
             margin-right: 0.5rem;
         }
-
+        .log-entry {
+            padding: 0.2rem 0.5rem;
+            border-bottom: 1px solid #2a2a40;
+            font-size: 0.8rem;
+            font-family: monospace;
+            color: #b0b8d0;
+        }
+        .log-entry .log-time {
+            color: #6a7a9a;
+        }
+        .log-entry .log-user {
+            color: #f0b400;
+        }
+        .log-entry .log-action {
+            color: #8ab4ff;
+        }
+        .banned-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.3rem 0.5rem;
+            border-bottom: 1px solid #2a2a40;
+            font-size: 0.85rem;
+            align-items: center;
+        }
+        .banned-item .banned-name {
+            color: #ea4335;
+            font-weight: 500;
+        }
+        .banned-item .unban-btn {
+            padding: 0.1rem 0.6rem;
+            font-size: 0.7rem;
+            border-radius: 30px;
+            border: 1px solid #ea4335;
+            background: transparent;
+            color: #ea4335;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+        .banned-item .unban-btn:hover {
+            background: #ea4335;
+            color: #fff;
+        }
         @media (max-width: 600px) {
             body { padding: 0.8rem; }
             .app-header h1 { font-size: 1.4rem; }
@@ -644,9 +682,31 @@
             </div>
         </header>
 
-        <!-- АДМИН-ПАНЕЛЬ -->
         <div class="admin-panel" id="adminPanel">
             <h3>🛠 Админ-панель</h3>
+            
+            <div class="form-group" id="logGroup" style="display:none;">
+                <label>📋 Лог действий</label>
+                <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.5rem;">
+                    <button class="btn btn-outline btn-sm" id="refreshLogsBtn"><i class="fas fa-sync-alt"></i> Обновить</button>
+                    <button class="btn btn-danger btn-sm" id="clearLogsBtn"><i class="fas fa-trash"></i> Очистить</button>
+                    <button class="btn btn-success btn-sm" id="exportLogsBtn"><i class="fas fa-download"></i> Экспорт</button>
+                </div>
+                <div id="logContainer" style="max-height:300px;overflow-y:auto;border:1px solid #2a2a40;border-radius:12px;background:#0d0d1a;padding:0.3rem 0;"></div>
+                <div style="margin-top:0.3rem;font-size:0.7rem;color:#6a7a9a;">Всего записей: <span id="logTotalCount">0</span></div>
+            </div>
+
+            <div class="form-group" id="bannedListGroup" style="display:none;">
+                <label>🚫 Забаненные пользователи</label>
+                <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.5rem;">
+                    <button class="btn btn-outline btn-sm" id="refreshBannedBtn"><i class="fas fa-sync-alt"></i> Обновить</button>
+                </div>
+                <div id="bannedListContainer" style="max-height:200px;overflow-y:auto;border:1px solid #2a2a40;border-radius:12px;background:#0d0d1a;padding:0.3rem 0;">
+                    <div style="padding:0.5rem;color:#6a7a9a;text-align:center;">Загрузка...</div>
+                </div>
+                <div style="margin-top:0.3rem;font-size:0.7rem;color:#6a7a9a;">Всего: <span id="bannedTotalCount">0</span></div>
+            </div>
+
             <div class="form-group">
                 <label>Уведомление для всех</label>
                 <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
@@ -662,7 +722,6 @@
                     <button class="btn btn-outline" id="adminUnbanBtn"><i class="fas fa-undo"></i> Разбанить</button>
                 </div>
             </div>
-            <!-- УПРАВЛЕНИЕ АДМИНАМИ (только суперадмин) -->
             <div class="form-group" id="adminManageGroup" style="display:none;">
                 <label>Управление админами (только суперадмин)</label>
                 <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
@@ -716,7 +775,6 @@
         </div>
     </div>
 
-    <!-- Модалка -->
     <div class="modal-overlay" id="taskModal">
         <div class="modal-content">
             <h2 id="modalTitle">Новое задание</h2>
@@ -748,12 +806,12 @@
                     <button type="button" class="btn btn-outline" id="cancelModal">Отмена</button>
                     <button type="button" class="btn btn-primary" id="saveBtn"><i class="fas fa-check"></i> Сохранить</button>
                 </div>
-                <div id="saveStatus" style="margin-top:0.5rem;font-size:0.85rem;text-align:center;"></div>
+                <div id="sendStatus" style="margin-top:0.5rem;font-size:0.85rem;text-align:center;color:#34a853;"></div>
+                <div id="saveStatus" style="margin-top:0.3rem;font-size:0.85rem;text-align:center;"></div>
             </form>
         </div>
     </div>
 
-    <!-- Уведомление -->
     <div class="notification" id="notification"></div>
 
     <script>
@@ -782,7 +840,10 @@
         let editingId = null;
         let bannedUsers = [];
         let adminUsers = [];
-        let isLoading = true;  // НОВАЯ ПЕРЕМЕННАЯ ДЛЯ ЗАГЛУШКИ
+        let isLoading = true;
+        let allLogs = [];
+        let isSending = false;
+        let sendTimer = null;
 
         // DOM
         const taskListEl = document.getElementById('taskList');
@@ -824,6 +885,18 @@
         const adminRemoveBtn = document.getElementById('adminRemoveBtn');
         const adminList = document.getElementById('adminList');
 
+        const logGroup = document.getElementById('logGroup');
+        const refreshLogsBtn = document.getElementById('refreshLogsBtn');
+        const clearLogsBtn = document.getElementById('clearLogsBtn');
+        const exportLogsBtn = document.getElementById('exportLogsBtn');
+        const logContainer = document.getElementById('logContainer');
+        const logTotalCount = document.getElementById('logTotalCount');
+
+        const bannedListGroup = document.getElementById('bannedListGroup');
+        const refreshBannedBtn = document.getElementById('refreshBannedBtn');
+        const bannedListContainer = document.getElementById('bannedListContainer');
+        const bannedTotalCount = document.getElementById('bannedTotalCount');
+
         // ---------- ИНИЦИАЛИЗАЦИЯ FIREBASE ----------
         try {
             firebase.initializeApp(firebaseConfig);
@@ -838,6 +911,7 @@
         const tasksRef = db.ref('tasks');
         const bannedRef = db.ref('banned');
         const adminsRef = db.ref('admins');
+        const logsRef = db.ref('logs');
 
         // ---------- ЗАГРУЗКА ИМЕНИ ----------
         const savedName = localStorage.getItem('hw6_userName');
@@ -873,7 +947,7 @@
                 adminUsers = [];
             }
             updateAdminUI();
-            render(); // перерисовка для обновления прав
+            render();
         });
 
         // ---------- ФУНКЦИЯ ПРОВЕРКИ ПРАВ ----------
@@ -898,6 +972,8 @@
                 adminLabel.textContent = 'Админ';
                 adminPanel.classList.remove('visible');
                 adminManageGroup.style.display = 'none';
+                logGroup.style.display = 'none';
+                bannedListGroup.style.display = 'none';
                 render();
                 return;
             }
@@ -910,9 +986,14 @@
                 adminLabel.textContent = 'Суперадмин';
                 adminPanel.classList.add('visible');
                 adminManageGroup.style.display = 'block';
+                logGroup.style.display = 'block';
+                bannedListGroup.style.display = 'block';
                 render();
                 showStats();
                 updateAdminUI();
+                loadLogs();
+                loadBannedList();
+                addLog('Вход в админку', 'Суперадмин вошёл в панель управления');
             } else if (pass !== null) {
                 alert('Неверный пароль!');
             }
@@ -926,6 +1007,8 @@
             adminLabel.textContent = 'Суперадмин';
             adminPanel.classList.add('visible');
             adminManageGroup.style.display = 'block';
+            logGroup.style.display = 'block';
+            bannedListGroup.style.display = 'block';
         }
 
         // ---------- ОБНОВЛЕНИЕ UI АДМИНА ----------
@@ -936,16 +1019,19 @@
                 adminLabel.textContent = 'Админ';
                 adminPanel.classList.add('visible');
                 adminManageGroup.style.display = 'none';
+                logGroup.style.display = 'none';
+                bannedListGroup.style.display = 'none';
             } else if (!isSuperAdmin && !isAdmin) {
                 adminBtn.classList.remove('active');
                 adminLabel.textContent = 'Админ';
                 adminPanel.classList.remove('visible');
                 adminManageGroup.style.display = 'none';
+                logGroup.style.display = 'none';
+                bannedListGroup.style.display = 'none';
             } else if (isSuperAdmin) {
-                // уже установлено
-            }
-            if (isSuperAdmin) {
                 adminManageGroup.style.display = 'block';
+                logGroup.style.display = 'block';
+                bannedListGroup.style.display = 'block';
             }
             if (adminList) {
                 adminList.innerHTML = 'Текущие админы: ' + (adminUsers.length ? adminUsers.join(', ') : 'нет');
@@ -964,10 +1050,10 @@
             document.getElementById('themeToggle').innerHTML = '<i class="fas fa-sun"></i>';
         }
 
-        // ---------- ЗАГРУЗКА ЗАДАНИЙ (С ЗАГЛУШКОЙ) ----------
+        // ---------- ЗАГРУЗКА ЗАДАНИЙ ----------
         function loadTasks() {
             isLoading = true;
-            render(); // покажет "Загрузка заданий..."
+            render();
 
             tasksRef.on('value', function(snapshot) {
                 const data = snapshot.val();
@@ -999,6 +1085,108 @@
             }, duration);
         }
 
+        // ---------- ДОБАВЛЕНИЕ ЛОГА ----------
+        function addLog(action, details) {
+            if (!isSuperAdmin) return;
+            const logData = {
+                action: action,
+                details: details || '',
+                user: currentUser,
+                timestamp: Date.now()
+            };
+            logsRef.push(logData).catch(function(e) {
+                console.warn('Ошибка записи лога:', e);
+            });
+        }
+
+        // ---------- ЗАГРУЗКА ЛОГОВ ----------
+        function loadLogs() {
+            if (!isSuperAdmin) return;
+            logsRef.orderByChild('timestamp').limitToLast(200).once('value', function(snapshot) {
+                const data = snapshot.val();
+                if (data) {
+                    const logs = Object.values(data).reverse();
+                    allLogs = logs;
+                    logTotalCount.textContent = logs.length;
+                    renderLogs(logs);
+                } else {
+                    allLogs = [];
+                    logTotalCount.textContent = 0;
+                    logContainer.innerHTML = '<div style="padding:0.5rem;color:#6a7a9a;text-align:center;">Логов пока нет</div>';
+                }
+            }).catch(function(e) {
+                console.warn('Ошибка загрузки логов:', e);
+                logContainer.innerHTML = '<div style="padding:0.5rem;color:#ea4335;text-align:center;">Ошибка загрузки логов</div>';
+            });
+        }
+
+        function renderLogs(logs) {
+            if (!logContainer) return;
+            if (!logs || logs.length === 0) {
+                logContainer.innerHTML = '<div style="padding:0.5rem;color:#6a7a9a;text-align:center;">Логов пока нет</div>';
+                return;
+            }
+            let html = '';
+            logs.forEach(function(log) {
+                const time = new Date(log.timestamp).toLocaleString('ru', {
+                    day: '2-digit', month: '2-digit', year: 'numeric',
+                    hour: '2-digit', minute: '2-digit', second: '2-digit'
+                });
+                html += '<div class="log-entry">' +
+                    '<span class="log-time">[' + time + ']</span> ' +
+                    '<span class="log-user">' + (log.user || 'Система') + '</span> ' +
+                    '<span class="log-action">' + log.action + '</span>' +
+                    (log.details ? ' <span style="color:#8a8aa0;">' + log.details + '</span>' : '') +
+                    '</div>';
+            });
+            logContainer.innerHTML = html;
+        }
+
+        // ---------- ЗАГРУЗКА СПИСКА ЗАБАНЕННЫХ ----------
+        function loadBannedList() {
+            if (!isSuperAdmin) return;
+            bannedRef.on('value', function(snapshot) {
+                const data = snapshot.val();
+                if (!bannedListContainer) return;
+                if (!data) {
+                    bannedListContainer.innerHTML = '<div style="padding:0.5rem;color:#6a7a9a;text-align:center;">Забаненных нет</div>';
+                    if (bannedTotalCount) bannedTotalCount.textContent = '0';
+                    return;
+                }
+                const entries = Object.entries(data);
+                let html = '';
+                entries.forEach(function(entry) {
+                    const key = entry[0];
+                    const name = entry[1];
+                    html += '<div class="banned-item">' +
+                        '<span class="banned-name">' + name + '</span>' +
+                        '<button class="unban-btn" data-key="' + key + '" data-name="' + name + '">Разбанить</button>' +
+                        '</div>';
+                });
+                bannedListContainer.innerHTML = html;
+                if (bannedTotalCount) bannedTotalCount.textContent = entries.length;
+
+                bannedListContainer.querySelectorAll('.unban-btn').forEach(function(btn) {
+                    btn.addEventListener('click', function() {
+                        const key = this.dataset.key;
+                        const name = this.dataset.name;
+                        if (confirm('Разбанить ' + name + '?')) {
+                            bannedRef.child(key).remove().then(function() {
+                                showNotification('✅ ' + name + ' разбанен', 3000);
+                                loadBannedList();
+                                bannedRef.once('value', function(snap) {
+                                    const data = snap.val();
+                                    bannedUsers = data ? Object.values(data) : [];
+                                });
+                            }).catch(function(e) {
+                                alert('Ошибка разбана: ' + e.message);
+                            });
+                        }
+                    });
+                });
+            });
+        }
+
         // ---------- ОТПРАВКА В TELEGRAM ----------
         function sendToTelegram(message) {
             return fetch(TELEGRAM_API_URL, {
@@ -1008,7 +1196,7 @@
             }).then(function(r) { return r.json(); });
         }
 
-        // ---------- СОХРАНЕНИЕ ----------
+        // ---------- СОХРАНЕНИЕ (С ЗАЩИТОЙ ОТ СПАМА 15 СЕКУНД) ----------
         function saveTask() {
             const subject = document.getElementById('formSubject').value.trim();
             const text = document.getElementById('formText').value.trim();
@@ -1022,6 +1210,11 @@
 
             if (bannedUsers.indexOf(author) !== -1) {
                 alert('❌ Вы забанены и не можете добавлять задания!');
+                return;
+            }
+
+            if (isSending) {
+                alert('⏳ Подождите 15 секунд перед отправкой следующего задания');
                 return;
             }
 
@@ -1041,6 +1234,7 @@
             };
 
             let promise;
+            let isNew = false;
             if (editingId) {
                 const old = tasks.find(function(t) { return t.id === editingId; });
                 if (old) {
@@ -1049,14 +1243,45 @@
                     taskData.pinned = old.pinned || false;
                 }
                 promise = tasksRef.child(editingId).update(taskData);
+                addLog('Редактирование задания', 'ID: ' + editingId + ', предмет: ' + subject);
             } else {
+                isNew = true;
                 promise = tasksRef.push().set(taskData);
+                addLog('Добавление задания', 'Предмет: ' + subject + ', автор: ' + author);
             }
 
             promise.then(function() {
                 saveStatusEl.textContent = '✅ Сохранено!';
                 saveStatusEl.style.color = '#34a853';
-                if (!editingId) {
+                const saveBtn = document.getElementById('saveBtn');
+                if (!isNew) {
+                    setTimeout(function() { closeModal(); }, 1000);
+                } else {
+                    saveStatusEl.textContent = '✅ Отправлено!';
+                    document.getElementById('sendStatus').textContent = '⏳ Подождите 15с перед следующим';
+                    saveBtn.disabled = true;
+                    saveBtn.style.opacity = '0.6';
+                    saveBtn.style.cursor = 'not-allowed';
+                    isSending = true;
+                    let seconds = 15;
+                    if (sendTimer) clearInterval(sendTimer);
+                    sendTimer = setInterval(function() {
+                        seconds--;
+                        if (seconds <= 0) {
+                            clearInterval(sendTimer);
+                            sendTimer = null;
+                            saveBtn.disabled = false;
+                            saveBtn.style.opacity = '1';
+                            saveBtn.style.cursor = 'pointer';
+                            document.getElementById('sendStatus').textContent = '';
+                            isSending = false;
+                        } else {
+                            document.getElementById('sendStatus').textContent = '⏳ Подождите ' + seconds + 'с';
+                        }
+                    }, 1000);
+                    setTimeout(function() { closeModal(); }, 1000);
+                }
+                if (isNew) {
                     const msg = '📚 <b>Новое задание в 6-1!</b>\n' +
                         'Предмет: ' + subject + '\n' +
                         'Задание: ' + text + '\n' +
@@ -1064,17 +1289,22 @@
                         'Дата: ' + date.split('-').reverse().join('.');
                     sendToTelegram(msg).catch(function(e) { console.warn('Telegram error:', e); });
                 }
-                setTimeout(function() { closeModal(); }, 1000);
             }).catch(function(err) {
                 saveStatusEl.textContent = '❌ Ошибка: ' + err.message;
                 saveStatusEl.style.color = '#ea4335';
                 console.error('❌ Save error:', err);
+                const saveBtn = document.getElementById('saveBtn');
+                saveBtn.disabled = false;
+                saveBtn.style.opacity = '1';
+                saveBtn.style.cursor = 'pointer';
+                document.getElementById('sendStatus').textContent = '';
+                isSending = false;
+                if (sendTimer) { clearInterval(sendTimer); sendTimer = null; }
             });
         }
 
-        // ---------- РЕНДЕРИНГ (С ЗАГЛУШКОЙ) ----------
+        // ---------- РЕНДЕРИНГ ----------
         function render() {
-            // ЕСЛИ ИДЁТ ЗАГРУЗКА — ПОКАЗЫВАЕМ ЗАГЛУШКУ
             if (isLoading) {
                 taskListEl.innerHTML = '<div class="loading-state"><i class="fas fa-spinner fa-spin"></i> Загрузка заданий...</div>';
                 return;
@@ -1207,6 +1437,8 @@
                     e.stopPropagation();
                     const id = this.dataset.id;
                     if (confirm('Удалить задание?')) {
+                        const task = tasks.find(function(t) { return t.id === id; });
+                        if (task) addLog('Удаление задания', 'Предмет: ' + task.subject + ', автор: ' + task.author);
                         tasksRef.child(id).remove().catch(function(err) { alert('Ошибка: ' + err.message); });
                     }
                 });
@@ -1230,12 +1462,16 @@
             if (!task) return;
             const likes = task.likes || [];
             const idx = likes.indexOf(currentUser);
+            let action = 'Добавление лайка';
             if (idx === -1) {
                 likes.push(currentUser);
+                action = 'Лайк +1';
             } else {
                 likes.splice(idx, 1);
+                action = 'Лайк -1';
             }
             tasksRef.child(taskId).update({ likes: likes });
+            addLog(action, 'Задание: ' + task.subject + ', автор: ' + task.author);
         }
 
         // ---------- ЗАКРЕП ----------
@@ -1244,6 +1480,7 @@
             const task = tasks.find(function(t) { return t.id === taskId; });
             if (!task) return;
             tasksRef.child(taskId).update({ pinned: !task.pinned });
+            addLog('Закрепление задания', 'Предмет: ' + task.subject + ' (статус: ' + (!task.pinned ? 'закреплён' : 'откреплён') + ')');
         }
 
         // ---------- СТАТИСТИКА ----------
@@ -1273,6 +1510,7 @@
             if (!text) { alert('Введите текст уведомления!'); return; }
             showNotification('📢 ' + text, 8000);
             adminNotifyInput.value = '';
+            addLog('Отправка уведомления', 'Текст: ' + text);
         });
 
         adminBanBtn.addEventListener('click', function() {
@@ -1283,6 +1521,8 @@
             bannedRef.push(name);
             adminBanInput.value = '';
             showNotification('✅ ' + name + ' забанен!', 3000);
+            addLog('Бан пользователя', name);
+            loadBannedList();
         });
 
         adminUnbanBtn.addEventListener('click', function() {
@@ -1301,6 +1541,8 @@
                     });
                     if (found) {
                         showNotification('✅ ' + name + ' разбанен!', 3000);
+                        addLog('Разбан пользователя', name);
+                        loadBannedList();
                     } else {
                         alert('Пользователь не найден в бан-листе!');
                     }
@@ -1314,19 +1556,23 @@
             if (!confirm('Удалить все просроченные задания?')) return;
             const today = new Date();
             today.setHours(0,0,0,0);
+            let count = 0;
             tasks.forEach(function(task) {
                 const taskDate = new Date(task.date + 'T00:00:00');
                 if (taskDate < today) {
                     tasksRef.child(task.id).remove();
+                    count++;
                 }
             });
-            showNotification('✅ Просроченные задания удалены!', 3000);
+            addLog('Удаление просроченных', 'Удалено заданий: ' + count);
+            showNotification('✅ Просроченные задания удалены! (' + count + ' шт.)', 3000);
         });
 
         adminRefreshStatsBtn.addEventListener('click', function() {
             if (!isAdmin) return;
             showStats();
             showNotification('✅ Статистика обновлена!', 2000);
+            addLog('Обновление статистики', '');
         });
 
         // ---------- УПРАВЛЕНИЕ АДМИНАМИ ----------
@@ -1338,6 +1584,7 @@
             adminsRef.push(name);
             adminAddInput.value = '';
             showNotification('✅ ' + name + ' назначен админом!', 3000);
+            addLog('Назначение админа', name);
         });
 
         adminRemoveBtn.addEventListener('click', function() {
@@ -1356,6 +1603,7 @@
                     });
                     if (found) {
                         showNotification('✅ ' + name + ' удалён из админов!', 3000);
+                        addLog('Снятие админа', name);
                     } else {
                         alert('Пользователь не найден в списке админов!');
                     }
@@ -1364,8 +1612,71 @@
             adminAddInput.value = '';
         });
 
+        // ---------- ОБРАБОТЧИКИ ЛОГОВ ----------
+        if (refreshLogsBtn) {
+            refreshLogsBtn.addEventListener('click', function() {
+                loadLogs();
+                showNotification('Логи обновлены', 2000);
+            });
+        }
+
+        if (clearLogsBtn) {
+            clearLogsBtn.addEventListener('click', function() {
+                if (!isSuperAdmin) return;
+                if (!confirm('Удалить все логи?')) return;
+                logsRef.remove().then(function() {
+                    showNotification('Логи очищены', 2000);
+                    loadLogs();
+                }).catch(function(e) {
+                    alert('Ошибка очистки логов: ' + e.message);
+                });
+            });
+        }
+
+        if (exportLogsBtn) {
+            exportLogsBtn.addEventListener('click', function() {
+                if (!isSuperAdmin) return;
+                if (!allLogs || allLogs.length === 0) {
+                    alert('Нет логов для экспорта');
+                    return;
+                }
+                let text = '=== ЛОГ ДЕЙСТВИЙ ===\n';
+                allLogs.forEach(function(log) {
+                    const time = new Date(log.timestamp).toLocaleString('ru', {
+                        day: '2-digit', month: '2-digit', year: 'numeric',
+                        hour: '2-digit', minute: '2-digit', second: '2-digit'
+                    });
+                    text += '[' + time + '] ' + (log.user || 'Система') + ' — ' + log.action;
+                    if (log.details) text += ' (' + log.details + ')';
+                    text += '\n';
+                });
+                const blob = new Blob([text], { type: 'text/plain' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = 'logs_export.txt';
+                a.click();
+                showNotification('Логи экспортированы', 2000);
+            });
+        }
+
+        // ---------- ОБРАБОТЧИК СПИСКА БАНОВ ----------
+        if (refreshBannedBtn) {
+            refreshBannedBtn.addEventListener('click', function() {
+                loadBannedList();
+                showNotification('Список банов обновлён', 2000);
+            });
+        }
+
         // ---------- МОДАЛКА ----------
         function openModal(title, data) {
+            document.getElementById('sendStatus').textContent = '';
+            const saveBtn = document.getElementById('saveBtn');
+            saveBtn.disabled = false;
+            saveBtn.style.opacity = '1';
+            saveBtn.style.cursor = 'pointer';
+            if (sendTimer) { clearInterval(sendTimer); sendTimer = null; }
+            isSending = false;
+
             modalTitle.textContent = title;
             if (data) {
                 formSubject.value = data.subject || '';
@@ -1438,15 +1749,17 @@
         });
 
         // ---------- СТАРТ ----------
-        console.log('🚀 Сайт загружен с заглушкой загрузки');
+        console.log('🚀 Сайт загружен с логами, списком банов и защитой от спама');
         checkAdminRights();
         if (isAdmin) showStats();
         if (isSuperAdmin) {
             adminManageGroup.style.display = 'block';
+            logGroup.style.display = 'block';
+            bannedListGroup.style.display = 'block';
+            loadLogs();
+            loadBannedList();
         }
         updateAdminUI();
-
-        // Загружаем задания (с заглушкой)
         loadTasks();
     </script>
 </body>
