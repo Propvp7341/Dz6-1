@@ -814,13 +814,6 @@
             </div>
 
             <div class="form-group">
-                <label>Уведомление для всех</label>
-                <div style="display:flex;gap:0.3rem;flex-wrap:wrap;">
-                    <input type="text" id="adminNotifyInput" placeholder="Текст уведомления" style="flex:1;padding:0.4rem 0.8rem;border-radius:60px;border:1px solid #3a3a5a;background:#22223a;color:#eaeef5;font-family:inherit;outline:none;">
-                    <button class="btn btn-primary btn-sm" id="adminNotifyBtn"><i class="fas fa-bell"></i> Отправить</button>
-                </div>
-            </div>
-            <div class="form-group">
                 <label>Бан пользователя</label>
                 <div style="display:flex;gap:0.3rem;flex-wrap:wrap;">
                     <input type="text" id="adminBanInput" placeholder="Имя пользователя" style="flex:1;padding:0.4rem 0.8rem;border-radius:60px;border:1px solid #3a3a5a;background:#22223a;color:#eaeef5;font-family:inherit;outline:none;">
@@ -990,8 +983,6 @@
         const saveStatusEl = document.getElementById('saveStatus');
         const notificationEl = document.getElementById('notification');
 
-        const adminNotifyInput = document.getElementById('adminNotifyInput');
-        const adminNotifyBtn = document.getElementById('adminNotifyBtn');
         const adminBanInput = document.getElementById('adminBanInput');
         const adminBanBtn = document.getElementById('adminBanBtn');
         const adminUnbanBtn = document.getElementById('adminUnbanBtn');
@@ -1032,7 +1023,6 @@
         const bannedRef = db.ref('banned');
         const adminsRef = db.ref('admins');
         const logsRef = db.ref('logs');
-        const notifRef = db.ref('notifications');
         const chatRef = db.ref('chat');
 
         // ---------- ЗАГРУЗКА ИМЕНИ ----------
@@ -1610,23 +1600,6 @@
             adminStats.innerHTML = html;
         }
 
-        adminNotifyBtn.addEventListener('click', function() {
-            if (!isAdmin) return;
-            const text = adminNotifyInput.value.trim();
-            if (!text) { alert('Введите текст уведомления!'); return; }
-            notifRef.push({
-                text: text,
-                timestamp: Date.now(),
-                author: currentUser || 'Админ'
-            }).then(function() {
-                adminNotifyInput.value = '';
-                showNotification('📢 ' + text, 10000);
-                addLog('Отправка уведомления', 'Текст: ' + text);
-            }).catch(function(e) {
-                alert('Ошибка: ' + e.message);
-            });
-        });
-
         adminBanBtn.addEventListener('click', function() {
             if (!isAdmin) return;
             const name = adminBanInput.value.trim();
@@ -1854,18 +1827,6 @@
             dayFilter.value = 'all';
             subjectFilter.value = 'all';
             render();
-        });
-
-        // ---------- ГЛОБАЛЬНЫЕ УВЕДОМЛЕНИЯ ----------
-        let lastNotifId = null;
-        notifRef.orderByChild('timestamp').limitToLast(1).on('child_added', function(snapshot) {
-            const data = snapshot.val();
-            const notifId = snapshot.key;
-            if (lastNotifId === notifId) return;
-            lastNotifId = notifId;
-            if (data && data.text) {
-                showNotification('📢 ' + data.text, 10000);
-            }
         });
 
         // ---------- ЧАТ С МОМЕНТАЛЬНЫМ УДАЛЕНИЕМ ----------
