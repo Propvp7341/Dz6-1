@@ -2429,7 +2429,6 @@
                         const isFromAdmin = msg.from === 'admin' || msg.from === 'superadmin';
                         const sender = isFromAdmin ? 'Администрация' : msg.userId;
                         const msgClass = isFromAdmin ? 'other' : 'mine';
-                        // Кнопка удаления для админа (все сообщения) и для автора
                         const canDelete = isAdminUser || msg.userId === currentUser;
                         html += `
                             <div class="support-msg ${msgClass}" data-id="${msg.id}">
@@ -2449,7 +2448,6 @@
                     });
                     supportMessages.innerHTML = html;
 
-                    // Обработчики удаления
                     supportMessages.querySelectorAll('.delete-support-msg').forEach(function(btn) {
                         btn.addEventListener('click', function() {
                             const id = this.dataset.id;
@@ -2489,7 +2487,6 @@
                             const isFromAdmin = msg.from === 'admin' || msg.from === 'superadmin';
                             const sender = isFromAdmin ? 'Администрация' : 'Вы';
                             const msgClass = isFromAdmin ? 'other' : 'mine';
-                            // Пользователь может удалять только свои сообщения
                             const canDelete = msg.userId === currentUser;
                             html += `
                                 <div class="support-msg ${msgClass}" data-id="${msg.id}">
@@ -2527,22 +2524,17 @@
             });
         }
 
-        // ---------- ОТПРАВКА СООБЩЕНИЯ В ПОДДЕРЖКУ (С ПРАВИЛЬНОЙ ПОДПИСКОЙ) ----------
+        // ---------- ОТПРАВКА СООБЩЕНИЯ В ПОДДЕРЖКУ ----------
         function sendSupportMessage() {
             const text = supportInput.value.trim();
             if (!text) return;
 
             const isAdminUser = isAdmin || isSuperAdmin;
-            
-            // Определяем, кому адресовано сообщение
             let targetUser = currentUser;
-            // Если сообщение начинается с @, значит это ответ конкретному пользователю
             const mentionMatch = text.match(/^@(\S+)\s*/);
             if (mentionMatch && isAdminUser) {
                 targetUser = mentionMatch[1];
-                // Убираем @ из текста
                 supportInput.value = text.replace(/^@\S+\s*/, '');
-                // Отправляем с задержкой, чтобы обновить поле
                 setTimeout(sendSupportMessage, 100);
                 return;
             }
@@ -2561,15 +2553,14 @@
                 supportStatus.textContent = '✅ Сообщение отправлено';
                 supportStatus.style.color = '#34a853';
                 loadSupportMessages();
-                
-                // Уведомление адресату, если он на сайте
+
                 if (targetUser !== currentUser) {
                     showNotification('📩 Сообщение отправлено пользователю ' + targetUser, 3000);
                     if (isSuperAdmin) {
                         sendToTelegram('📩 Администратор ответил ' + targetUser + ': ' + text);
                     }
                 }
-                
+
                 if (!isAdminUser) {
                     showNotification('📩 Ваше сообщение отправлено администрации', 3000);
                     if (isSuperAdmin) {
@@ -2590,25 +2581,22 @@
             if (e.key === 'Enter') sendSupportMessage();
         });
 
-        // ---------- ПОДПИСКА НА НОВЫЕ СООБЩЕНИЯ (ДЛЯ ВСЕХ) ----------
+        // ---------- ПОДПИСКА НА НОВЫЕ СООБЩЕНИЯ ----------
         function watchSupportMessages() {
             if (!currentUser) return;
             const isAdminUser = isAdmin || isSuperAdmin;
 
-            // Подписываемся на все новые сообщения
             supportRef.limitToLast(1).on('child_added', function(snapshot) {
                 const data = snapshot.val();
                 if (!data) return;
 
-                // Если сообщение от админа и адресат - текущий пользователь
                 if ((data.from === 'admin' || data.from === 'superadmin') && data.userId === currentUser) {
                     showPersistentNotification('📩 Сообщение от администрации: ' + data.text);
                     if (supportModal.classList.contains('active')) {
                         loadSupportMessages();
                     }
                 }
-                
-                // Если сообщение от пользователя и мы админ
+
                 if (isAdminUser && data.from === 'user') {
                     showNotification('📩 Новое сообщение в поддержку от ' + data.userId, 5000);
                     if (supportModal.classList.contains('active')) {
@@ -2618,9 +2606,9 @@
             });
         }
 
-        // ---------- НЕЗАКРЫВАЕМЫЕ УВЕДОМЛЕНИЯ ----------
+        // ---------- НЕЗАКРЫВАЕМЫЕ УВЕДОМЛЕНИЯ (С ПОДДЕРЖКОЙ РУССКОГО) ----------
         function showPersistentNotification(text) {
-            const notificationId = 'notif_' + btoa(text).slice(0, 20);
+            const notificationId = 'notif_' + btoa(encodeURIComponent(text)).slice(0, 24);
             const closed = localStorage.getItem('closed_' + notificationId);
             if (closed === 'true') return;
 
@@ -2673,14 +2661,20 @@
                     const notificationId = key.replace('shown_', '');
                     const closed = localStorage.getItem('closed_' + notificationId);
                     if (closed !== 'true') {
-                        const text = atob(notificationId.replace('notif_', ''));
-                        showPersistentNotification(text);
+                        try {
+                            const encoded = notificationId.replace('notif_', '');
+                            const text = decodeURIComponent(atob(encoded));
+                            showPersistentNotification(text);
+                        } catch(e) {
+                            localStorage.removeItem(key);
+                            localStorage.removeItem('closed_' + notificationId);
+                        }
                     }
                 }
             });
         }
 
-        // Переопределяем showNotification для перехвата админских сообщений
+        // Переопределяем showNotification
         const originalShowNotification = showNotification;
         window.showNotification = function(text, duration) {
             const isAdminMessage = text.toLowerCase().includes('администрац') ||
