@@ -2527,18 +2527,33 @@
             });
         }
 
-        // Отправка сообщения в поддержку
+        // ---------- ОТПРАВКА СООБЩЕНИЯ В ПОДДЕРЖКУ (С ПРАВИЛЬНОЙ ПОДПИСКОЙ) ----------
         function sendSupportMessage() {
             const text = supportInput.value.trim();
             if (!text) return;
 
             const isAdminUser = isAdmin || isSuperAdmin;
+            
+            // Определяем, кому адресовано сообщение
+            let targetUser = currentUser;
+            // Если сообщение начинается с @, значит это ответ конкретному пользователю
+            const mentionMatch = text.match(/^@(\S+)\s*/);
+            if (mentionMatch && isAdminUser) {
+                targetUser = mentionMatch[1];
+                // Убираем @ из текста
+                supportInput.value = text.replace(/^@\S+\s*/, '');
+                // Отправляем с задержкой, чтобы обновить поле
+                setTimeout(sendSupportMessage, 100);
+                return;
+            }
+
             const msgData = {
-                userId: currentUser,
+                userId: targetUser,
                 text: text,
                 timestamp: Date.now(),
                 from: isAdminUser ? (isSuperAdmin ? 'superadmin' : 'admin') : 'user',
-                read: false
+                read: false,
+                to: targetUser
             };
 
             supportRef.push(msgData).then(function() {
@@ -2546,8 +2561,17 @@
                 supportStatus.textContent = '✅ Сообщение отправлено';
                 supportStatus.style.color = '#34a853';
                 loadSupportMessages();
+                
+                // Уведомление адресату, если он на сайте
+                if (targetUser !== currentUser) {
+                    showNotification('📩 Сообщение отправлено пользователю ' + targetUser, 3000);
+                    if (isSuperAdmin) {
+                        sendToTelegram('📩 Администратор ответил ' + targetUser + ': ' + text);
+                    }
+                }
+                
                 if (!isAdminUser) {
-                    showNotification('📩 Новое сообщение в поддержку от ' + currentUser, 5000);
+                    showNotification('📩 Ваше сообщение отправлено администрации', 3000);
                     if (isSuperAdmin) {
                         sendToTelegram('📩 Новое сообщение в поддержку от ' + currentUser + ': ' + text);
                     }
@@ -2566,34 +2590,32 @@
             if (e.key === 'Enter') sendSupportMessage();
         });
 
-        // Подписка на новые сообщения в поддержке
+        // ---------- ПОДПИСКА НА НОВЫЕ СООБЩЕНИЯ (ДЛЯ ВСЕХ) ----------
         function watchSupportMessages() {
             if (!currentUser) return;
             const isAdminUser = isAdmin || isSuperAdmin;
 
-            if (!isAdminUser) {
-                supportRef.orderByChild('userId').equalTo(currentUser).on('child_added', function(snapshot) {
-                    const data = snapshot.val();
-                    if (!data) return;
-                    if (data.from === 'admin' || data.from === 'superadmin') {
-                        showPersistentNotification('📩 Сообщение от администрации: ' + data.text);
-                        if (supportModal.classList.contains('active')) {
-                            loadSupportMessages();
-                        }
+            // Подписываемся на все новые сообщения
+            supportRef.limitToLast(1).on('child_added', function(snapshot) {
+                const data = snapshot.val();
+                if (!data) return;
+
+                // Если сообщение от админа и адресат - текущий пользователь
+                if ((data.from === 'admin' || data.from === 'superadmin') && data.userId === currentUser) {
+                    showPersistentNotification('📩 Сообщение от администрации: ' + data.text);
+                    if (supportModal.classList.contains('active')) {
+                        loadSupportMessages();
                     }
-                });
-            } else {
-                supportRef.limitToLast(1).on('child_added', function(snapshot) {
-                    const data = snapshot.val();
-                    if (!data) return;
-                    if (data.from === 'user') {
-                        showNotification('📩 Новое сообщение в поддержку от ' + data.userId, 5000);
-                        if (supportModal.classList.contains('active')) {
-                            loadSupportMessages();
-                        }
+                }
+                
+                // Если сообщение от пользователя и мы админ
+                if (isAdminUser && data.from === 'user') {
+                    showNotification('📩 Новое сообщение в поддержку от ' + data.userId, 5000);
+                    if (supportModal.classList.contains('active')) {
+                        loadSupportMessages();
                     }
-                });
-            }
+                }
+            });
         }
 
         // ---------- НЕЗАКРЫВАЕМЫЕ УВЕДОМЛЕНИЯ ----------
