@@ -866,6 +866,21 @@
             background: #2a2a40;
             color: #eaeef5;
         }
+        /* Кнопка удаления в поддержке */
+        .delete-support-msg {
+            background: none;
+            border: none;
+            color: #ea4335;
+            cursor: pointer;
+            font-size: 0.7rem;
+            padding: 0.1rem 0.4rem;
+            border-radius: 30px;
+            transition: 0.2s;
+            margin-left: 0.3rem;
+        }
+        .delete-support-msg:hover {
+            background: rgba(234, 67, 53, 0.1);
+        }
         #supportModal .modal-actions {
             margin-top: 0.4rem;
         }
@@ -2414,11 +2429,18 @@
                         const isFromAdmin = msg.from === 'admin' || msg.from === 'superadmin';
                         const sender = isFromAdmin ? 'Администрация' : msg.userId;
                         const msgClass = isFromAdmin ? 'other' : 'mine';
+                        // Кнопка удаления для админа (все сообщения) и для автора
+                        const canDelete = isAdminUser || msg.userId === currentUser;
                         html += `
-                            <div class="support-msg ${msgClass}">
-                                <div class="msg-author">${sender}</div>
+                            <div class="support-msg ${msgClass}" data-id="${msg.id}">
+                                <div style="display:flex;justify-content:space-between;align-items:center;">
+                                    <div class="msg-author">${sender}</div>
+                                    <div>
+                                        <span class="msg-time">${time}</span>
+                                        ${canDelete ? `<button class="delete-support-msg" data-id="${msg.id}"><i class="fas fa-trash-alt"></i></button>` : ''}
+                                    </div>
+                                </div>
                                 <div class="msg-text">${msg.text}</div>
-                                <span class="msg-time">${time}</span>
                                 ${!isFromAdmin && isAdminUser ? `
                                     <button class="reply-btn" data-userid="${msg.userId}"><i class="fas fa-reply"></i> Ответить</button>
                                 ` : ''}
@@ -2426,6 +2448,23 @@
                         `;
                     });
                     supportMessages.innerHTML = html;
+
+                    // Обработчики удаления
+                    supportMessages.querySelectorAll('.delete-support-msg').forEach(function(btn) {
+                        btn.addEventListener('click', function() {
+                            const id = this.dataset.id;
+                            if (!id) return;
+                            if (!confirm('Удалить сообщение?')) return;
+                            supportRef.child(id).remove()
+                                .then(function() {
+                                    showNotification('🗑️ Сообщение удалено', 1500);
+                                    loadSupportMessages();
+                                })
+                                .catch(function(e) {
+                                    alert('Ошибка удаления: ' + e.message);
+                                });
+                        });
+                    });
 
                     supportMessages.querySelectorAll('.reply-btn').forEach(function(btn) {
                         btn.addEventListener('click', function() {
@@ -2450,16 +2489,39 @@
                             const isFromAdmin = msg.from === 'admin' || msg.from === 'superadmin';
                             const sender = isFromAdmin ? 'Администрация' : 'Вы';
                             const msgClass = isFromAdmin ? 'other' : 'mine';
+                            // Пользователь может удалять только свои сообщения
+                            const canDelete = msg.userId === currentUser;
                             html += `
-                                <div class="support-msg ${msgClass}">
-                                    <div class="msg-author">${sender}</div>
+                                <div class="support-msg ${msgClass}" data-id="${msg.id}">
+                                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                                        <div class="msg-author">${sender}</div>
+                                        <div>
+                                            <span class="msg-time">${time}</span>
+                                            ${canDelete ? `<button class="delete-support-msg" data-id="${msg.id}"><i class="fas fa-trash-alt"></i></button>` : ''}
+                                        </div>
+                                    </div>
                                     <div class="msg-text">${msg.text}</div>
-                                    <span class="msg-time">${time}</span>
                                 </div>
                             `;
                         });
                     }
                     supportMessages.innerHTML = html;
+
+                    supportMessages.querySelectorAll('.delete-support-msg').forEach(function(btn) {
+                        btn.addEventListener('click', function() {
+                            const id = this.dataset.id;
+                            if (!id) return;
+                            if (!confirm('Удалить сообщение?')) return;
+                            supportRef.child(id).remove()
+                                .then(function() {
+                                    showNotification('🗑️ Сообщение удалено', 1500);
+                                    loadSupportMessages();
+                                })
+                                .catch(function(e) {
+                                    alert('Ошибка удаления: ' + e.message);
+                                });
+                        });
+                    });
                 }
                 supportMessages.scrollTop = supportMessages.scrollHeight;
             });
