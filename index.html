@@ -781,6 +781,149 @@
             text-align: center;
         }
 
+        /* === НОВЫЕ СТИЛИ ДЛЯ СВЯЗИ С АДМИНИСТРАЦИЕЙ === */
+        #supportModal .modal-content {
+            max-width: 560px;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            padding: 1.2rem;
+            background: #1a1a2a;
+            border: 1px solid #2a2a44;
+            border-radius: 28px;
+        }
+        #supportModal .modal-content h2 {
+            color: #f0b400;
+            margin-bottom: 0.5rem;
+            font-size: 1.2rem;
+        }
+        #supportMessages {
+            flex: 1;
+            overflow-y: auto;
+            border: 1px solid #2a2a44;
+            border-radius: 14px;
+            padding: 0.5rem;
+            background: #0d0d1a;
+            min-height: 200px;
+            max-height: 300px;
+            margin-bottom: 0.8rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+        .support-msg {
+            padding: 0.3rem 0.5rem;
+            border-radius: 12px;
+            max-width: 85%;
+            word-wrap: break-word;
+            font-size: 0.85rem;
+            line-height: 1.3;
+        }
+        .support-msg.mine {
+            align-self: flex-end;
+            background: #1a73e8;
+            color: #fff;
+            border-bottom-right-radius: 4px;
+        }
+        .support-msg.other {
+            align-self: flex-start;
+            background: #1e1e2e;
+            color: #eaeef5;
+            border-bottom-left-radius: 4px;
+        }
+        .support-msg .msg-author {
+            font-weight: 600;
+            font-size: 0.7rem;
+            color: #8ab4ff;
+            margin-bottom: 0.1rem;
+        }
+        .support-msg.mine .msg-author {
+            color: rgba(255,255,255,0.7);
+        }
+        .support-msg .msg-time {
+            font-size: 0.55rem;
+            color: #6a7a9a;
+            margin-top: 0.1rem;
+            display: block;
+            text-align: right;
+        }
+        .support-msg.mine .msg-time {
+            color: rgba(255,255,255,0.5);
+        }
+        .support-msg .reply-btn {
+            padding: 0.05rem 0.5rem;
+            font-size: 0.65rem;
+            border-radius: 30px;
+            border: 1px solid #3a4a6a;
+            background: transparent;
+            color: #8a8aa0;
+            cursor: pointer;
+            transition: 0.15s;
+            margin-top: 0.2rem;
+            display: inline-block;
+        }
+        .support-msg .reply-btn:hover {
+            background: #2a2a40;
+            color: #eaeef5;
+        }
+        #supportModal .modal-actions {
+            margin-top: 0.4rem;
+        }
+        #supportStatus {
+            margin-top: 0.3rem;
+            font-size: 0.8rem;
+            text-align: center;
+            color: #6a7a9a;
+        }
+        /* Стили для незакрываемого уведомления */
+        .persistent-notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a73e8;
+            color: #fff;
+            padding: 1.2rem 2rem;
+            border-radius: 20px;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+            z-index: 9999;
+            max-width: 90%;
+            text-align: center;
+            font-weight: 500;
+            border: 2px solid #f0b400;
+            animation: slideDown 0.3s ease;
+            pointer-events: auto;
+        }
+        .persistent-notification .notif-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.7rem;
+        }
+        .persistent-notification .notif-text {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1rem;
+        }
+        .persistent-notification .notif-btn {
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: #fff;
+            padding: 0.3rem 1.5rem;
+            font-size: 0.8rem;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .persistent-notification .notif-btn:hover {
+            background: rgba(255,255,255,0.25);
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
         @media (max-width: 600px) {
             body {
                 padding: 0.6rem;
@@ -828,6 +971,23 @@
                 padding: 0.05rem 0.35rem;
                 min-width: 14px;
             }
+            #supportModal .modal-content {
+                padding: 1rem;
+            }
+            #supportMessages {
+                min-height: 150px;
+                max-height: 250px;
+            }
+            .support-msg {
+                max-width: 90%;
+                font-size: 0.8rem;
+            }
+            .persistent-notification {
+                padding: 0.8rem 1.2rem;
+            }
+            .persistent-notification .notif-text {
+                font-size: 0.85rem;
+            }
         }
     </style>
 </head>
@@ -840,6 +1000,7 @@
                 <button class="btn btn-primary btn-sm" id="addBtn"><i class="fas fa-plus"></i> Добавить</button>
                 <button class="btn btn-outline btn-sm admin-btn" id="adminBtn"><i class="fas fa-lock"></i> <span id="adminLabel">Админ</span></button>
                 <button class="btn btn-outline btn-sm" id="chatToggleBtn"><i class="fas fa-comment"></i> Чат</button>
+                <button class="btn btn-outline btn-sm" id="supportBtn"><i class="fas fa-headset"></i> Связь</button>
                 <button class="theme-toggle" id="themeToggle"><i class="fas fa-moon"></i></button>
             </div>
         </header>
@@ -982,6 +1143,24 @@
         </div>
     </div>
 
+    <!-- Модалка поддержки -->
+    <div class="modal-overlay" id="supportModal">
+        <div class="modal-content">
+            <h2 style="margin-bottom:0.5rem;font-size:1.2rem;">📨 Связь с администрацией</h2>
+            <div id="supportMessages" style="flex:1;overflow-y:auto;border:1px solid #2a2a44;border-radius:14px;padding:0.5rem;background:#0d0d1a;min-height:200px;max-height:300px;margin-bottom:0.8rem;">
+                <div style="color:#6a7a9a;text-align:center;padding:1rem;">Загрузка...</div>
+            </div>
+            <div style="display:flex;gap:0.4rem;">
+                <input type="text" id="supportInput" placeholder="Введите сообщение..." style="flex:1;padding:0.4rem 0.8rem;border-radius:60px;border:1px solid #3a3a5a;background:#22223a;color:#eaeef5;font-family:inherit;outline:none;font-size:0.85rem;">
+                <button class="btn btn-primary btn-sm" id="supportSendBtn"><i class="fas fa-paper-plane"></i></button>
+            </div>
+            <div class="modal-actions" style="margin-top:0.4rem;">
+                <button class="btn btn-outline btn-sm" id="supportCloseBtn">Закрыть</button>
+            </div>
+            <div id="supportStatus" style="margin-top:0.3rem;font-size:0.8rem;text-align:center;color:#6a7a9a;"></div>
+        </div>
+    </div>
+
     <div class="notification" id="notification"></div>
 
     <script>
@@ -1072,6 +1251,15 @@
         const chatCloseBtn = document.getElementById('chatCloseBtn');
         const chatClearBtn = document.getElementById('chatClearBtn');
 
+        // ---------- ЭЛЕМЕНТЫ ПОДДЕРЖКИ ----------
+        const supportBtn = document.getElementById('supportBtn');
+        const supportModal = document.getElementById('supportModal');
+        const supportMessages = document.getElementById('supportMessages');
+        const supportInput = document.getElementById('supportInput');
+        const supportSendBtn = document.getElementById('supportSendBtn');
+        const supportCloseBtn = document.getElementById('supportCloseBtn');
+        const supportStatus = document.getElementById('supportStatus');
+
         // ---------- ИНИЦИАЛИЗАЦИЯ FIREBASE ----------
         try {
             firebase.initializeApp(firebaseConfig);
@@ -1088,6 +1276,7 @@
         const adminsRef = db.ref('admins');
         const logsRef = db.ref('logs');
         const chatRef = db.ref('chat');
+        const supportRef = db.ref('support_messages');
 
         // ---------- ЗАГРУЗКА ИМЕНИ ----------
         const savedName = localStorage.getItem('hw6_userName');
@@ -2165,8 +2354,270 @@
         }
         updateChatClearBtn();
 
-        // ---------- СТАРТ ----------
-        console.log('🚀 Сайт загружен с моментальным удалением сообщений и счётчиком непрочитанных');
+        // ---------- СВЯЗЬ С АДМИНИСТРАЦИЕЙ ----------
+        // Открытие модалки поддержки
+        supportBtn.addEventListener('click', function() {
+            if (!currentUser) {
+                alert('Пожалуйста, войдите в систему');
+                return;
+            }
+            supportModal.classList.add('active');
+            loadSupportMessages();
+            setTimeout(function() {
+                supportInput.focus();
+            }, 300);
+        });
+
+        supportCloseBtn.addEventListener('click', function() {
+            supportModal.classList.remove('active');
+        });
+
+        supportModal.addEventListener('click', function(e) {
+            if (e.target === supportModal) supportModal.classList.remove('active');
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') supportModal.classList.remove('active');
+        });
+
+        // Загрузка сообщений поддержки
+        function loadSupportMessages() {
+            const isAdminUser = isAdmin || isSuperAdmin;
+            const user = currentUser;
+
+            let query;
+            if (isAdminUser) {
+                query = supportRef.orderByChild('timestamp');
+            } else {
+                query = supportRef.orderByChild('userId').equalTo(user);
+            }
+
+            query.once('value', function(snapshot) {
+                const data = snapshot.val();
+                supportMessages.innerHTML = '';
+                if (!data) {
+                    supportMessages.innerHTML = '<div style="color:#6a7a9a;text-align:center;padding:1rem;">📭 Нет сообщений</div>';
+                    return;
+                }
+
+                let messages = Object.entries(data).map(function(entry) {
+                    return { id: entry[0], ...entry[1] };
+                });
+
+                if (isAdminUser) {
+                    messages.sort(function(a, b) { return a.timestamp - b.timestamp; });
+                    let html = '';
+                    messages.forEach(function(msg) {
+                        const time = new Date(msg.timestamp).toLocaleString('ru', {
+                            hour: '2-digit', minute: '2-digit'
+                        });
+                        const isFromAdmin = msg.from === 'admin' || msg.from === 'superadmin';
+                        const sender = isFromAdmin ? 'Администрация' : msg.userId;
+                        const msgClass = isFromAdmin ? 'other' : 'mine';
+                        html += `
+                            <div class="support-msg ${msgClass}">
+                                <div class="msg-author">${sender}</div>
+                                <div class="msg-text">${msg.text}</div>
+                                <span class="msg-time">${time}</span>
+                                ${!isFromAdmin && isAdminUser ? `
+                                    <button class="reply-btn" data-userid="${msg.userId}"><i class="fas fa-reply"></i> Ответить</button>
+                                ` : ''}
+                            </div>
+                        `;
+                    });
+                    supportMessages.innerHTML = html;
+
+                    supportMessages.querySelectorAll('.reply-btn').forEach(function(btn) {
+                        btn.addEventListener('click', function() {
+                            const userId = this.dataset.userid;
+                            supportInput.value = '@' + userId + ' ';
+                            supportInput.focus();
+                        });
+                    });
+                } else {
+                    messages = messages.filter(function(msg) {
+                        return msg.userId === user || msg.from === 'admin' || msg.from === 'superadmin';
+                    });
+                    messages.sort(function(a, b) { return a.timestamp - b.timestamp; });
+                    let html = '';
+                    if (messages.length === 0) {
+                        html = '<div style="color:#6a7a9a;text-align:center;padding:1rem;">📭 Нет сообщений</div>';
+                    } else {
+                        messages.forEach(function(msg) {
+                            const time = new Date(msg.timestamp).toLocaleString('ru', {
+                                hour: '2-digit', minute: '2-digit'
+                            });
+                            const isFromAdmin = msg.from === 'admin' || msg.from === 'superadmin';
+                            const sender = isFromAdmin ? 'Администрация' : 'Вы';
+                            const msgClass = isFromAdmin ? 'other' : 'mine';
+                            html += `
+                                <div class="support-msg ${msgClass}">
+                                    <div class="msg-author">${sender}</div>
+                                    <div class="msg-text">${msg.text}</div>
+                                    <span class="msg-time">${time}</span>
+                                </div>
+                            `;
+                        });
+                    }
+                    supportMessages.innerHTML = html;
+                }
+                supportMessages.scrollTop = supportMessages.scrollHeight;
+            });
+        }
+
+        // Отправка сообщения в поддержку
+        function sendSupportMessage() {
+            const text = supportInput.value.trim();
+            if (!text) return;
+
+            const isAdminUser = isAdmin || isSuperAdmin;
+            const msgData = {
+                userId: currentUser,
+                text: text,
+                timestamp: Date.now(),
+                from: isAdminUser ? (isSuperAdmin ? 'superadmin' : 'admin') : 'user',
+                read: false
+            };
+
+            supportRef.push(msgData).then(function() {
+                supportInput.value = '';
+                supportStatus.textContent = '✅ Сообщение отправлено';
+                supportStatus.style.color = '#34a853';
+                loadSupportMessages();
+                if (!isAdminUser) {
+                    showNotification('📩 Новое сообщение в поддержку от ' + currentUser, 5000);
+                    if (isSuperAdmin) {
+                        sendToTelegram('📩 Новое сообщение в поддержку от ' + currentUser + ': ' + text);
+                    }
+                }
+                setTimeout(function() {
+                    supportStatus.textContent = '';
+                }, 3000);
+            }).catch(function(err) {
+                supportStatus.textContent = '❌ Ошибка: ' + err.message;
+                supportStatus.style.color = '#ea4335';
+            });
+        }
+
+        supportSendBtn.addEventListener('click', sendSupportMessage);
+        supportInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') sendSupportMessage();
+        });
+
+        // Подписка на новые сообщения в поддержке
+        function watchSupportMessages() {
+            if (!currentUser) return;
+            const isAdminUser = isAdmin || isSuperAdmin;
+
+            if (!isAdminUser) {
+                supportRef.orderByChild('userId').equalTo(currentUser).on('child_added', function(snapshot) {
+                    const data = snapshot.val();
+                    if (!data) return;
+                    if (data.from === 'admin' || data.from === 'superadmin') {
+                        showPersistentNotification('📩 Сообщение от администрации: ' + data.text);
+                        if (supportModal.classList.contains('active')) {
+                            loadSupportMessages();
+                        }
+                    }
+                });
+            } else {
+                supportRef.limitToLast(1).on('child_added', function(snapshot) {
+                    const data = snapshot.val();
+                    if (!data) return;
+                    if (data.from === 'user') {
+                        showNotification('📩 Новое сообщение в поддержку от ' + data.userId, 5000);
+                        if (supportModal.classList.contains('active')) {
+                            loadSupportMessages();
+                        }
+                    }
+                });
+            }
+        }
+
+        // ---------- НЕЗАКРЫВАЕМЫЕ УВЕДОМЛЕНИЯ ----------
+        function showPersistentNotification(text) {
+            const notificationId = 'notif_' + btoa(text).slice(0, 20);
+            const closed = localStorage.getItem('closed_' + notificationId);
+            if (closed === 'true') return;
+
+            document.querySelectorAll('.persistent-notification').forEach(function(el) {
+                el.remove();
+            });
+
+            const notif = document.createElement('div');
+            notif.className = 'persistent-notification';
+            notif.id = notificationId;
+            notif.innerHTML = `
+                <div class="notif-content">
+                    <div class="notif-text">
+                        <i class="fas fa-envelope"></i>
+                        <span>${text}</span>
+                    </div>
+                    <button class="notif-btn" onclick="openSupportAndClose('${notificationId}')">
+                        <i class="fas fa-reply"></i> Перейти к сообщению
+                    </button>
+                </div>
+            `;
+
+            document.body.appendChild(notif);
+            localStorage.setItem('shown_' + notificationId, 'true');
+        }
+
+        window.openSupportAndClose = function(notificationId) {
+            const notif = document.getElementById(notificationId);
+            if (notif) {
+                notif.style.transition = 'all 0.3s ease';
+                notif.style.opacity = '0';
+                notif.style.transform = 'translateX(-50%) translateY(-20px)';
+                setTimeout(function() {
+                    notif.remove();
+                }, 300);
+            }
+            localStorage.setItem('closed_' + notificationId, 'true');
+
+            supportModal.classList.add('active');
+            loadSupportMessages();
+            setTimeout(function() {
+                supportInput.focus();
+            }, 400);
+        };
+
+        function checkPersistentNotifications() {
+            const keys = Object.keys(localStorage);
+            keys.forEach(function(key) {
+                if (key.startsWith('shown_') && key.includes('notif_')) {
+                    const notificationId = key.replace('shown_', '');
+                    const closed = localStorage.getItem('closed_' + notificationId);
+                    if (closed !== 'true') {
+                        const text = atob(notificationId.replace('notif_', ''));
+                        showPersistentNotification(text);
+                    }
+                }
+            });
+        }
+
+        // Переопределяем showNotification для перехвата админских сообщений
+        const originalShowNotification = showNotification;
+        window.showNotification = function(text, duration) {
+            const isAdminMessage = text.toLowerCase().includes('администрац') ||
+                                   text.toLowerCase().includes('админ') ||
+                                   text.toLowerCase().includes('от админа');
+            if (isAdminMessage) {
+                showPersistentNotification(text);
+            } else {
+                originalShowNotification(text, duration);
+            }
+        };
+
+        // ---------- ЗАПУСК ----------
+        setTimeout(function() {
+            checkPersistentNotifications();
+            if (currentUser) {
+                watchSupportMessages();
+            }
+        }, 1000);
+
+        console.log('🚀 Сайт загружен с поддержкой и незакрываемыми уведомлениями');
         checkAdminRights();
         if (isAdmin) showStats();
         if (isSuperAdmin) {
