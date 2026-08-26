@@ -2524,28 +2524,62 @@
             });
         }
 
-        // ---------- ОТПРАВКА СООБЩЕНИЯ В ПОДДЕРЖКУ ----------
+        // ---------- ОТПРАВКА СООБЩЕНИЯ В ПОДДЕРЖКУ (ИСПРАВЛЕННАЯ) ----------
         function sendSupportMessage() {
             const text = supportInput.value.trim();
             if (!text) return;
 
             const isAdminUser = isAdmin || isSuperAdmin;
             let targetUser = currentUser;
+
+            // Если есть @ в начале, отправляем этому пользователю
             const mentionMatch = text.match(/^@(\S+)\s*/);
             if (mentionMatch && isAdminUser) {
                 targetUser = mentionMatch[1];
-                supportInput.value = text.replace(/^@\S+\s*/, '');
-                setTimeout(sendSupportMessage, 100);
+                // Убираем @ из текста
+                const cleanText = text.replace(/^@\S+\s*/, '');
+                if (!cleanText) {
+                    supportStatus.textContent = '⚠️ Введите текст после @';
+                    supportStatus.style.color = '#ea4335';
+                    return;
+                }
+                supportInput.value = cleanText;
+                // Отправляем сразу с правильным адресатом
+                const msgData = {
+                    userId: targetUser,
+                    text: cleanText,
+                    timestamp: Date.now(),
+                    from: isSuperAdmin ? 'superadmin' : 'admin',
+                    read: false,
+                    to: targetUser
+                };
+                supportRef.push(msgData).then(function() {
+                    supportInput.value = '';
+                    supportStatus.textContent = '✅ Ответ отправлен ' + targetUser;
+                    supportStatus.style.color = '#34a853';
+                    loadSupportMessages();
+                    showNotification('📩 Ответ отправлен пользователю ' + targetUser, 3000);
+                    if (isSuperAdmin) {
+                        sendToTelegram('📩 Администратор ответил ' + targetUser + ': ' + cleanText);
+                    }
+                    setTimeout(function() {
+                        supportStatus.textContent = '';
+                    }, 3000);
+                }).catch(function(err) {
+                    supportStatus.textContent = '❌ Ошибка: ' + err.message;
+                    supportStatus.style.color = '#ea4335';
+                });
                 return;
             }
 
+            // Обычное сообщение (не ответ)
             const msgData = {
-                userId: targetUser,
+                userId: currentUser,
                 text: text,
                 timestamp: Date.now(),
                 from: isAdminUser ? (isSuperAdmin ? 'superadmin' : 'admin') : 'user',
                 read: false,
-                to: targetUser
+                to: currentUser
             };
 
             supportRef.push(msgData).then(function() {
@@ -2553,19 +2587,8 @@
                 supportStatus.textContent = '✅ Сообщение отправлено';
                 supportStatus.style.color = '#34a853';
                 loadSupportMessages();
-
-                if (targetUser !== currentUser) {
-                    showNotification('📩 Сообщение отправлено пользователю ' + targetUser, 3000);
-                    if (isSuperAdmin) {
-                        sendToTelegram('📩 Администратор ответил ' + targetUser + ': ' + text);
-                    }
-                }
-
                 if (!isAdminUser) {
                     showNotification('📩 Ваше сообщение отправлено администрации', 3000);
-                    if (isSuperAdmin) {
-                        sendToTelegram('📩 Новое сообщение в поддержку от ' + currentUser + ': ' + text);
-                    }
                 }
                 setTimeout(function() {
                     supportStatus.textContent = '';
