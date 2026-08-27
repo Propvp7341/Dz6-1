@@ -939,6 +939,114 @@
             to { opacity: 1; transform: translateX(-50%) translateY(0); }
         }
 
+        /* === СТИЛИ ДЛЯ СТРАНИЦЫ АДМИНИСТРАЦИИ === */
+        #adminsPage {
+            padding: 1rem 0;
+        }
+        #adminsPage h2 {
+            color: #f0b400;
+            margin-bottom: 1rem;
+        }
+        #adminsList > div {
+            background: #1a1a2a;
+            border-radius: 16px;
+            padding: 0.8rem 1.2rem;
+            border: 1px solid #2a2a44;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        #adminsList .admin-name {
+            font-weight: 600;
+            font-size: 1rem;
+            color: #eaeef5;
+        }
+        #adminsList .admin-role {
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        #adminsList .admin-icon {
+            font-size: 0.8rem;
+            color: #6a7a9a;
+        }
+
+        /* Стили для модалки управления админами */
+        #adminManageModal .modal-content {
+            max-width: 480px;
+        }
+        #adminManageModal .admin-manage-row {
+            display: flex;
+            gap: 0.4rem;
+            margin-bottom: 0.8rem;
+        }
+        #adminManageModal .admin-manage-row input {
+            flex: 1;
+            padding: 0.4rem 0.8rem;
+            border-radius: 60px;
+            border: 1px solid #3a3a5a;
+            background: #22223a;
+            color: #eaeef5;
+            font-family: inherit;
+            outline: none;
+        }
+        #adminManageModal .admin-manage-row input:focus {
+            border-color: #1a73e8;
+        }
+        #adminManageModal .admin-manage-row select {
+            padding: 0.4rem 0.8rem;
+            border-radius: 60px;
+            border: 1px solid #3a3a5a;
+            background: #22223a;
+            color: #eaeef5;
+            font-family: inherit;
+            outline: none;
+        }
+        #adminListContainer {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #2a2a44;
+            border-radius: 12px;
+            background: #0d0d1a;
+            padding: 0.3rem 0;
+        }
+        #adminListContainer .admin-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.4rem 0.6rem;
+            border-bottom: 1px solid #2a2a44;
+        }
+        #adminListContainer .admin-item:last-child {
+            border-bottom: none;
+        }
+        #adminListContainer .admin-item .admin-item-name {
+            color: #b0b8d0;
+        }
+        #adminListContainer .admin-item .admin-item-role {
+            color: #6a7a9a;
+            font-size: 0.7rem;
+        }
+        #adminListContainer .admin-item .remove-admin-btn {
+            padding: 0.05rem 0.5rem;
+            font-size: 0.65rem;
+            border-radius: 30px;
+            border: 1px solid #ea4335;
+            background: transparent;
+            color: #ea4335;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+        #adminListContainer .admin-item .remove-admin-btn:hover {
+            background: #ea4335;
+            color: #fff;
+        }
+        #adminListContainer .admin-item.superadmin {
+            background: rgba(240, 180, 0, 0.08);
+        }
+        #adminListContainer .admin-item.superadmin .admin-item-name {
+            color: #f0b400;
+        }
+
         @media (max-width: 600px) {
             body {
                 padding: 0.6rem;
@@ -1003,6 +1111,17 @@
             .persistent-notification .notif-text {
                 font-size: 0.85rem;
             }
+            #adminManageModal .modal-content {
+                max-width: 95%;
+                padding: 1rem;
+            }
+            #adminManageModal .admin-manage-row {
+                flex-wrap: wrap;
+            }
+            #adminManageModal .admin-manage-row select {
+                flex: 1;
+                min-width: 100px;
+            }
         }
     </style>
 </head>
@@ -1016,9 +1135,46 @@
                 <button class="btn btn-outline btn-sm admin-btn" id="adminBtn"><i class="fas fa-lock"></i> <span id="adminLabel">Админ</span></button>
                 <button class="btn btn-outline btn-sm" id="chatToggleBtn"><i class="fas fa-comment"></i> Чат</button>
                 <button class="btn btn-outline btn-sm" id="supportBtn"><i class="fas fa-headset"></i> Связь</button>
+                <button class="btn btn-outline btn-sm" id="adminsPageBtn"><i class="fas fa-users-cog"></i> Администрация</button>
                 <button class="theme-toggle" id="themeToggle"><i class="fas fa-moon"></i></button>
             </div>
         </header>
+
+        <!-- СТРАНИЦА АДМИНИСТРАЦИИ -->
+        <div id="adminsPage" style="display:none;">
+            <button class="btn btn-outline btn-sm" id="backFromAdmins" style="margin-bottom:1rem;">
+                <i class="fas fa-arrow-left"></i> Назад
+            </button>
+            <h2 style="color:#f0b400;margin-bottom:1rem;">👑 Администрация</h2>
+            <div id="adminsList">
+                <div style="color:#6a7a9a;text-align:center;padding:1rem;">Загрузка...</div>
+            </div>
+            <!-- Кнопка управления (только суперадмин) -->
+            <div id="adminManageBtnContainer" style="margin-top:1rem;display:none;">
+                <button class="btn btn-primary" id="openAdminManageModal"><i class="fas fa-edit"></i> Управление админами</button>
+            </div>
+        </div>
+
+        <!-- МОДАЛКА УПРАВЛЕНИЯ АДМИНАМИ -->
+        <div class="modal-overlay" id="adminManageModal">
+            <div class="modal-content" style="max-width:480px;">
+                <h2 style="margin-bottom:0.5rem;">🛠 Управление админами</h2>
+                <div class="admin-manage-row">
+                    <input type="text" id="newAdminName" placeholder="Имя нового админа" style="flex:1;padding:0.4rem 0.8rem;border-radius:60px;border:1px solid #3a3a5a;background:#22223a;color:#eaeef5;font-family:inherit;outline:none;">
+                    <select id="newAdminRole" style="padding:0.4rem 0.8rem;border-radius:60px;border:1px solid #3a3a5a;background:#22223a;color:#eaeef5;font-family:inherit;outline:none;">
+                        <option value="admin">Админ</option>
+                        <option value="superadmin">Суперадмин</option>
+                    </select>
+                    <button class="btn btn-primary btn-sm" id="addAdminBtn"><i class="fas fa-plus"></i></button>
+                </div>
+                <div id="adminListContainer" style="max-height:300px;overflow-y:auto;border:1px solid #2a2a44;border-radius:12px;background:#0d0d1a;padding:0.3rem 0;">
+                    <div style="padding:0.4rem;color:#6a7a9a;text-align:center;">Загрузка...</div>
+                </div>
+                <div class="modal-actions" style="margin-top:0.8rem;">
+                    <button class="btn btn-outline" id="closeAdminManageModal">Закрыть</button>
+                </div>
+            </div>
+        </div>
 
         <div class="admin-panel" id="adminPanel">
             <h3>🛠 Админ-панель</h3>
@@ -1266,7 +1422,7 @@
         const chatCloseBtn = document.getElementById('chatCloseBtn');
         const chatClearBtn = document.getElementById('chatClearBtn');
 
-        // ---------- ЭЛЕМЕНТЫ ПОДДЕРЖКИ ----------
+        // Элементы поддержки
         const supportBtn = document.getElementById('supportBtn');
         const supportModal = document.getElementById('supportModal');
         const supportMessages = document.getElementById('supportMessages');
@@ -1274,6 +1430,20 @@
         const supportSendBtn = document.getElementById('supportSendBtn');
         const supportCloseBtn = document.getElementById('supportCloseBtn');
         const supportStatus = document.getElementById('supportStatus');
+
+        // Элементы страницы администрации
+        const adminsPageBtn = document.getElementById('adminsPageBtn');
+        const adminsPage = document.getElementById('adminsPage');
+        const adminsList = document.getElementById('adminsList');
+        const adminManageBtnContainer = document.getElementById('adminManageBtnContainer');
+        const openAdminManageModalBtn = document.getElementById('openAdminManageModal');
+        const adminManageModal = document.getElementById('adminManageModal');
+        const closeAdminManageModalBtn = document.getElementById('closeAdminManageModal');
+        const newAdminName = document.getElementById('newAdminName');
+        const newAdminRole = document.getElementById('newAdminRole');
+        const addAdminBtn = document.getElementById('addAdminBtn');
+        const adminListContainer = document.getElementById('adminListContainer');
+        const backFromAdmins = document.getElementById('backFromAdmins');
 
         // ---------- ИНИЦИАЛИЗАЦИЯ FIREBASE ----------
         try {
@@ -1292,6 +1462,7 @@
         const logsRef = db.ref('logs');
         const chatRef = db.ref('chat');
         const supportRef = db.ref('support_messages');
+        const superadminRef = db.ref('superadmin');
 
         // ---------- ЗАГРУЗКА ИМЕНИ ----------
         const savedName = localStorage.getItem('hw6_userName');
@@ -2117,6 +2288,174 @@
             render();
         });
 
+        // ---------- СТРАНИЦА АДМИНИСТРАЦИИ ----------
+        function showAdminsPage() {
+            document.querySelector('.container').style.display = 'none';
+            adminsPage.style.display = 'block';
+            loadAdminsList();
+        }
+
+        function hideAdminsPage() {
+            document.querySelector('.container').style.display = 'block';
+            adminsPage.style.display = 'none';
+        }
+
+        // Кнопка "Администрация" в шапке
+        adminsPageBtn.addEventListener('click', showAdminsPage);
+
+        // Кнопка "Назад" на странице администрации
+        backFromAdmins.addEventListener('click', hideAdminsPage);
+
+        // Загрузка списка админов
+        function loadAdminsList() {
+            adminsList.innerHTML = '<div style="color:#6a7a9a;text-align:center;padding:1rem;">Загрузка...</div>';
+
+            Promise.all([
+                adminsRef.once('value'),
+                superadminRef.once('value')
+            ]).then(function(results) {
+                const adminsSnap = results[0];
+                const superSnap = results[1];
+                const admins = adminsSnap.val() ? Object.values(adminsSnap.val()) : [];
+                const superadmin = superSnap.val() || 'Костя Касьянов';
+
+                let allAdmins = [];
+                if (superadmin) {
+                    allAdmins.push({ name: superadmin, role: 'Суперадмин', isSuper: true });
+                }
+                admins.forEach(function(name) {
+                    allAdmins.push({ name: name, role: 'Админ', isSuper: false });
+                });
+
+                if (allAdmins.length === 0) {
+                    adminsList.innerHTML = '<div style="color:#6a7a9a;text-align:center;padding:1rem;">Администраторов пока нет</div>';
+                    return;
+                }
+
+                let html = '<div style="display:flex;flex-direction:column;gap:0.8rem;">';
+                allAdmins.forEach(function(admin) {
+                    const roleColor = admin.isSuper ? '#f0b400' : '#1a73e8';
+                    html += `
+                        <div style="background:#1a1a2a;border-radius:16px;padding:0.8rem 1.2rem;border:1px solid #2a2a44;display:flex;justify-content:space-between;align-items:center;">
+                            <div>
+                                <div style="font-weight:600;font-size:1rem;color:#eaeef5;">${admin.name}</div>
+                                <div style="font-size:0.75rem;color:${roleColor};font-weight:500;">${admin.role}</div>
+                            </div>
+                            <div style="font-size:0.8rem;color:#6a7a9a;">
+                                ${admin.isSuper ? '👑' : '🛡️'}
+                            </div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                adminsList.innerHTML = html;
+
+                // Показываем кнопку управления только суперадмину
+                if (isSuperAdmin) {
+                    adminManageBtnContainer.style.display = 'block';
+                } else {
+                    adminManageBtnContainer.style.display = 'none';
+                }
+            }).catch(function(e) {
+                adminsList.innerHTML = '<div style="color:#ea4335;text-align:center;padding:1rem;">Ошибка загрузки: ' + e.message + '</div>';
+            });
+        }
+
+        // ---------- УПРАВЛЕНИЕ АДМИНАМИ (ТОЛЬКО СУПЕРАДМИН) ----------
+        openAdminManageModalBtn.addEventListener('click', function() {
+            adminManageModal.classList.add('active');
+            loadAdminManageList();
+        });
+
+        closeAdminManageModalBtn.addEventListener('click', function() {
+            adminManageModal.classList.remove('active');
+        });
+
+        adminManageModal.addEventListener('click', function(e) {
+            if (e.target === this) this.classList.remove('active');
+        });
+
+        function loadAdminManageList() {
+            adminListContainer.innerHTML = '<div style="padding:0.4rem;color:#6a7a9a;text-align:center;">Загрузка...</div>';
+
+            Promise.all([
+                adminsRef.once('value'),
+                superadminRef.once('value')
+            ]).then(function(results) {
+                const adminsSnap = results[0];
+                const superSnap = results[1];
+                const admins = adminsSnap.val() ? Object.entries(adminsSnap.val()) : [];
+                const superadmin = superSnap.val() || 'Костя Касьянов';
+
+                let html = '';
+                // Суперадмин
+                html += `
+                    <div class="admin-item superadmin">
+                        <span class="admin-item-name">👑 ${superadmin}</span>
+                        <span class="admin-item-role">Суперадмин</span>
+                    </div>
+                `;
+                // Админы
+                admins.forEach(function(entry) {
+                    const key = entry[0];
+                    const name = entry[1];
+                    html += `
+                        <div class="admin-item">
+                            <span class="admin-item-name">🛡️ ${name}</span>
+                            <button class="remove-admin-btn" data-key="${key}" data-name="${name}">Удалить</button>
+                        </div>
+                    `;
+                });
+
+                adminListContainer.innerHTML = html;
+
+                // Обработчики удаления
+                adminListContainer.querySelectorAll('.remove-admin-btn').forEach(function(btn) {
+                    btn.addEventListener('click', function() {
+                        const key = this.dataset.key;
+                        const name = this.dataset.name;
+                        if (confirm('Удалить админа ' + name + '?')) {
+                            adminsRef.child(key).remove().then(function() {
+                                showNotification('✅ ' + name + ' удалён из админов', 3000);
+                                loadAdminManageList();
+                                loadAdminsList();
+                            });
+                        }
+                    });
+                });
+            }).catch(function(e) {
+                adminListContainer.innerHTML = '<div style="padding:0.4rem;color:#ea4335;text-align:center;">Ошибка: ' + e.message + '</div>';
+            });
+        }
+
+        // Добавление админа
+        addAdminBtn.addEventListener('click', function() {
+            const name = newAdminName.value.trim();
+            const role = newAdminRole.value;
+            if (!name) {
+                alert('Введите имя');
+                return;
+            }
+
+            if (role === 'superadmin') {
+                // Обновляем суперадмина
+                superadminRef.set(name).then(function() {
+                    showNotification('✅ Суперадмин обновлён: ' + name, 3000);
+                    newAdminName.value = '';
+                    loadAdminManageList();
+                    loadAdminsList();
+                });
+            } else {
+                // Добавляем админа
+                adminsRef.push(name).then(function() {
+                    showNotification('✅ Админ добавлен: ' + name, 3000);
+                    newAdminName.value = '';
+                    loadAdminManageList();
+                    loadAdminsList();
+                });
+            }
+        });
+
         // ---------- СЧЁТЧИК НЕПРОЧИТАННЫХ СООБЩЕНИЙ (С СОХРАНЕНИЕМ) ----------
         // Загружаем сохранённый timestamp из localStorage
         const savedTimestamp = localStorage.getItem('hw6_lastReadTimestamp');
@@ -2524,7 +2863,7 @@
             });
         }
 
-        // ---------- ОТПРАВКА СООБЩЕНИЯ В ПОДДЕРЖКУ (ИСПРАВЛЕННАЯ) ----------
+        // ---------- ОТПРАВКА СООБЩЕНИЯ В ПОДДЕРЖКУ ----------
         function sendSupportMessage() {
             const text = supportInput.value.trim();
             if (!text) return;
@@ -2536,7 +2875,6 @@
             const mentionMatch = text.match(/^@(\S+)\s*/);
             if (mentionMatch && isAdminUser) {
                 targetUser = mentionMatch[1];
-                // Убираем @ из текста
                 const cleanText = text.replace(/^@\S+\s*/, '');
                 if (!cleanText) {
                     supportStatus.textContent = '⚠️ Введите текст после @';
@@ -2544,7 +2882,6 @@
                     return;
                 }
                 supportInput.value = cleanText;
-                // Отправляем сразу с правильным адресатом
                 const msgData = {
                     userId: targetUser,
                     text: cleanText,
@@ -2572,7 +2909,6 @@
                 return;
             }
 
-            // Обычное сообщение (не ответ)
             const msgData = {
                 userId: currentUser,
                 text: text,
@@ -2629,7 +2965,7 @@
             });
         }
 
-        // ---------- НЕЗАКРЫВАЕМЫЕ УВЕДОМЛЕНИЯ (С ПОДДЕРЖКОЙ РУССКОГО) ----------
+        // ---------- НЕЗАКРЫВАЕМЫЕ УВЕДОМЛЕНИЯ ----------
         function showPersistentNotification(text) {
             const notificationId = 'notif_' + btoa(encodeURIComponent(text)).slice(0, 24);
             const closed = localStorage.getItem('closed_' + notificationId);
