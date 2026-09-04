@@ -1069,6 +1069,75 @@
             margin-top: 0.4rem;
         }
 
+        /* === СТИЛИ ДЛЯ РОЛЕЙ === */
+        #rolesBlock {
+            background: #1a1a2a;
+            border-radius: 20px;
+            padding: 1.2rem;
+            border: 1px solid #2a2a44;
+            margin-bottom: 1.5rem;
+            display: none;
+        }
+        #rolesBlock h3 {
+            color: #f0b400;
+            margin-bottom: 0.8rem;
+        }
+        .role-item {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.3rem 0.6rem;
+            background: #0d0d1a;
+            border-radius: 8px;
+            margin-bottom: 0.4rem;
+        }
+        .role-item .role-prefix {
+            font-weight: 600;
+        }
+        .role-item .role-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 1px solid #3a3a5a;
+        }
+        .role-item .role-name {
+            color: #b0b8d0;
+            flex: 1;
+        }
+        .role-item .role-actions .btn {
+            padding: 0.1rem 0.6rem;
+            font-size: 0.7rem;
+        }
+        .user-role-item {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.3rem 0.6rem;
+            border-bottom: 1px solid #2a2a44;
+        }
+        .user-role-item .user-name {
+            flex: 1;
+            color: #eaeef5;
+        }
+        .user-role-item select {
+            padding: 0.2rem 0.5rem;
+            border-radius: 30px;
+            border: 1px solid #3a3a5a;
+            background: #22223a;
+            color: #eaeef5;
+            font-family: inherit;
+            outline: none;
+        }
+        .user-role-item .btn {
+            padding: 0.1rem 0.6rem;
+            font-size: 0.7rem;
+        }
+        /* Ролевой префикс в тексте */
+        .role-prefix-display {
+            font-weight: 600;
+            margin-right: 0.2rem;
+        }
+
         @media (max-width: 600px) {
             body {
                 padding: 0.6rem;
@@ -1143,6 +1212,12 @@
             #adminsBlock .admin-actions .row select {
                 width: 100%;
             }
+            #rolesBlock {
+                padding: 0.8rem;
+            }
+            .role-item {
+                flex-wrap: wrap;
+            }
         }
     </style>
 </head>
@@ -1157,6 +1232,8 @@
                 <button class="btn btn-outline btn-sm" id="chatToggleBtn"><i class="fas fa-comment"></i> Чат</button>
                 <button class="btn btn-outline btn-sm" id="supportBtn"><i class="fas fa-headset"></i> Связь</button>
                 <button class="btn btn-outline btn-sm" id="adminsToggleBtn"><i class="fas fa-users-cog"></i> Администрация</button>
+                <!-- Кнопка Роли (теперь всегда видна) -->
+                <button class="btn btn-outline btn-sm" id="rolesToggleBtn"><i class="fas fa-tags"></i> Роли</button>
                 <button class="theme-toggle" id="themeToggle"><i class="fas fa-moon"></i></button>
             </div>
         </header>
@@ -1182,6 +1259,41 @@
             </div>
             <div style="margin-top:0.8rem;">
                 <button class="btn btn-outline btn-sm" id="closeAdminsBlockBtn"><i class="fas fa-times"></i> Закрыть</button>
+            </div>
+        </div>
+
+        <!-- БЛОК УПРАВЛЕНИЯ РОЛЯМИ (только суперадмин) -->
+        <div id="rolesBlock">
+            <h3><i class="fas fa-tags"></i> Управление ролями</h3>
+            <div style="margin-bottom:1rem;">
+                <div style="display:flex; gap:0.4rem; flex-wrap:wrap; align-items:center;">
+                    <input type="text" id="newRoleName" placeholder="Название роли" style="flex:1; min-width:100px; padding:0.4rem 0.8rem; border-radius:60px; border:1px solid #3a3a5a; background:#22223a; color:#eaeef5; font-family:inherit; outline:none;">
+                    <input type="text" id="newRolePrefix" placeholder="Префикс (★)" style="flex:0.8; min-width:80px; padding:0.4rem 0.8rem; border-radius:60px; border:1px solid #3a3a5a; background:#22223a; color:#eaeef5; font-family:inherit; outline:none;">
+                    <input type="color" id="newRoleColor" value="#ff6b6b" style="width:50px; height:40px; padding:0; border-radius:8px; border:1px solid #3a3a5a; background:transparent; cursor:pointer;">
+                    <button class="btn btn-primary btn-sm" id="addRoleBtn"><i class="fas fa-plus"></i> Создать</button>
+                </div>
+            </div>
+            <div id="rolesListContainer" style="max-height:200px; overflow-y:auto; border:1px solid #2a2a44; border-radius:12px; background:#0d0d1a; padding:0.2rem 0; margin-bottom:1rem;">
+                <div style="padding:0.4rem;color:#6a7a9a;text-align:center;">Ролей пока нет</div>
+            </div>
+            <div>
+                <div style="margin-bottom:0.5rem; font-weight:500; color:#b0b8d0;">Назначить роль пользователю</div>
+                <div style="display:flex; gap:0.4rem; flex-wrap:wrap; align-items:center;">
+                    <select id="userSelectRole" style="flex:1; min-width:120px; padding:0.4rem 0.8rem; border-radius:60px; border:1px solid #3a3a5a; background:#22223a; color:#eaeef5; font-family:inherit; outline:none;">
+                        <option value="">Выберите пользователя</option>
+                    </select>
+                    <select id="roleSelectAssign" style="flex:1; min-width:120px; padding:0.4rem 0.8rem; border-radius:60px; border:1px solid #3a3a5a; background:#22223a; color:#eaeef5; font-family:inherit; outline:none;">
+                        <option value="">Выберите роль</option>
+                    </select>
+                    <button class="btn btn-primary btn-sm" id="assignRoleBtn"><i class="fas fa-check"></i> Назначить</button>
+                    <button class="btn btn-outline btn-sm" id="removeUserRoleBtn"><i class="fas fa-times"></i> Снять</button>
+                </div>
+                <div id="assignedRolesList" style="margin-top:0.6rem; max-height:150px; overflow-y:auto; border:1px solid #2a2a44; border-radius:12px; background:#0d0d1a; padding:0.2rem 0;">
+                    <div style="padding:0.4rem;color:#6a7a9a;text-align:center;">Назначенных ролей нет</div>
+                </div>
+            </div>
+            <div style="margin-top:0.8rem;">
+                <button class="btn btn-outline btn-sm" id="closeRolesBlockBtn"><i class="fas fa-times"></i> Закрыть</button>
             </div>
         </div>
 
@@ -3045,6 +3157,369 @@
         }
         updateAdminUI();
         loadTasks();
+
+        // ---------- СИСТЕМА РОЛЕЙ (исправлена — кнопка не исчезает) ----------
+        (function() {
+            // Элементы кнопки и блока ролей
+            const rolesToggleBtn = document.getElementById('rolesToggleBtn');
+            const rolesBlock = document.getElementById('rolesBlock');
+            const closeRolesBlockBtn = document.getElementById('closeRolesBlockBtn');
+            const newRoleName = document.getElementById('newRoleName');
+            const newRolePrefix = document.getElementById('newRolePrefix');
+            const newRoleColor = document.getElementById('newRoleColor');
+            const addRoleBtn = document.getElementById('addRoleBtn');
+            const rolesListContainer = document.getElementById('rolesListContainer');
+            const userSelectRole = document.getElementById('userSelectRole');
+            const roleSelectAssign = document.getElementById('roleSelectAssign');
+            const assignRoleBtn = document.getElementById('assignRoleBtn');
+            const removeUserRoleBtn = document.getElementById('removeUserRoleBtn');
+            const assignedRolesList = document.getElementById('assignedRolesList');
+
+            // Явно показываем кнопку (чтобы она не была скрыта)
+            rolesToggleBtn.style.display = 'inline-flex';
+
+            // Ссылки Firebase для ролей
+            const rolesRef = db.ref('roles');
+            const userRolesRef = db.ref('user_roles');
+            let rolesData = {};
+            let userRolesData = {};
+
+            // Загрузка ролей
+            rolesRef.on('value', function(snap) {
+                rolesData = snap.val() || {};
+                updateRolesUI();
+                applyRolesToAll();
+            });
+
+            userRolesRef.on('value', function(snap) {
+                userRolesData = snap.val() || {};
+                applyRolesToAll();
+                updateAssignedRolesUI();
+            });
+
+            // Функции для получения префикса и цвета роли
+            function getUserRolePrefix(username) {
+                if (!username) return '';
+                const roleId = userRolesData[username];
+                if (!roleId) return '';
+                const role = rolesData[roleId];
+                if (!role) return '';
+                return role.prefix || '';
+            }
+
+            function getUserRoleColor(username) {
+                if (!username) return '';
+                const roleId = userRolesData[username];
+                if (!roleId) return '';
+                const role = rolesData[roleId];
+                if (!role) return '';
+                return role.color || '#f0b400';
+            }
+
+            // Применение ролей ко всем элементам на странице
+            function applyRolesToAll() {
+                // Задания
+                document.querySelectorAll('.author-name').forEach(function(el) {
+                    const name = el.textContent.trim();
+                    const prefix = getUserRolePrefix(name);
+                    const color = getUserRoleColor(name);
+                    if (prefix) {
+                        if (!el.querySelector('.role-prefix')) {
+                            const span = document.createElement('span');
+                            span.className = 'role-prefix';
+                            span.style.color = color;
+                            span.textContent = prefix + ' ';
+                            el.prepend(span);
+                        } else {
+                            const span = el.querySelector('.role-prefix');
+                            span.style.color = color;
+                            span.textContent = prefix + ' ';
+                        }
+                    } else {
+                        const span = el.querySelector('.role-prefix');
+                        if (span) span.remove();
+                    }
+                });
+
+                // Чат
+                document.querySelectorAll('.chat-msg .msg-author').forEach(function(el) {
+                    const name = el.textContent.trim();
+                    const prefix = getUserRolePrefix(name);
+                    const color = getUserRoleColor(name);
+                    if (prefix) {
+                        if (!el.querySelector('.role-prefix')) {
+                            const span = document.createElement('span');
+                            span.className = 'role-prefix';
+                            span.style.color = color;
+                            span.textContent = prefix + ' ';
+                            el.prepend(span);
+                        } else {
+                            const span = el.querySelector('.role-prefix');
+                            span.style.color = color;
+                            span.textContent = prefix + ' ';
+                        }
+                    } else {
+                        const span = el.querySelector('.role-prefix');
+                        if (span) span.remove();
+                    }
+                });
+
+                // Поддержка
+                document.querySelectorAll('.support-msg .msg-author').forEach(function(el) {
+                    const name = el.textContent.trim();
+                    if (name === 'Администрация') return;
+                    const prefix = getUserRolePrefix(name);
+                    const color = getUserRoleColor(name);
+                    if (prefix) {
+                        if (!el.querySelector('.role-prefix')) {
+                            const span = document.createElement('span');
+                            span.className = 'role-prefix';
+                            span.style.color = color;
+                            span.textContent = prefix + ' ';
+                            el.prepend(span);
+                        } else {
+                            const span = el.querySelector('.role-prefix');
+                            span.style.color = color;
+                            span.textContent = prefix + ' ';
+                        }
+                    } else {
+                        const span = el.querySelector('.role-prefix');
+                        if (span) span.remove();
+                    }
+                });
+            }
+
+            // Переопределение функций для применения ролей после добавления новых элементов
+            const originalAppendChatMessage = window.appendChatMessage;
+            if (originalAppendChatMessage) {
+                window.appendChatMessage = function(data) {
+                    originalAppendChatMessage(data);
+                    setTimeout(applyRolesToAll, 50);
+                };
+            }
+
+            const originalLoadSupportMessages = window.loadSupportMessages;
+            if (originalLoadSupportMessages) {
+                window.loadSupportMessages = function() {
+                    originalLoadSupportMessages();
+                    setTimeout(applyRolesToAll, 100);
+                };
+            }
+
+            const originalRender = window.render;
+            if (originalRender) {
+                window.render = function() {
+                    originalRender();
+                    setTimeout(applyRolesToAll, 50);
+                };
+            }
+
+            let rolesBlockVisible = false;
+
+            // Toggle блока ролей (с проверкой прав при клике)
+            rolesToggleBtn.addEventListener('click', function() {
+                if (!isSuperAdmin) {
+                    alert('Только суперадмин может управлять ролями!');
+                    return;
+                }
+                rolesBlockVisible = !rolesBlockVisible;
+                rolesBlock.style.display = rolesBlockVisible ? 'block' : 'none';
+                if (rolesBlockVisible) {
+                    updateRolesUI();
+                    populateUserSelect();
+                }
+            });
+
+            closeRolesBlockBtn.addEventListener('click', function() {
+                rolesBlock.style.display = 'none';
+                rolesBlockVisible = false;
+            });
+
+            // Обновление списка ролей
+            function updateRolesUI() {
+                const container = rolesListContainer;
+                const entries = Object.entries(rolesData);
+                if (entries.length === 0) {
+                    container.innerHTML = '<div style="padding:0.4rem;color:#6a7a9a;text-align:center;">Ролей пока нет</div>';
+                } else {
+                    let html = '';
+                    entries.forEach(function(entry) {
+                        const id = entry[0];
+                        const role = entry[1];
+                        html += `
+                            <div class="role-item">
+                                <span class="role-color" style="background:${role.color};"></span>
+                                <span class="role-prefix" style="color:${role.color};">${role.prefix || ''}</span>
+                                <span class="role-name">${role.name}</span>
+                                <div class="role-actions">
+                                    <button class="btn btn-danger btn-sm delete-role-btn" data-id="${id}"><i class="fas fa-trash"></i></button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    container.innerHTML = html;
+                    container.querySelectorAll('.delete-role-btn').forEach(function(btn) {
+                        btn.addEventListener('click', function() {
+                            const id = this.dataset.id;
+                            if (confirm('Удалить роль?')) {
+                                rolesRef.child(id).remove().then(function() {
+                                    showNotification('Роль удалена', 2000);
+                                }).catch(function(e) {
+                                    alert('Ошибка: ' + e.message);
+                                });
+                            }
+                        });
+                    });
+                }
+                populateRoleSelect();
+            }
+
+            // Заполнение select ролей
+            function populateRoleSelect() {
+                const select = roleSelectAssign;
+                select.innerHTML = '<option value="">Выберите роль</option>';
+                Object.entries(rolesData).forEach(function(entry) {
+                    const id = entry[0];
+                    const role = entry[1];
+                    const opt = document.createElement('option');
+                    opt.value = id;
+                    opt.textContent = (role.prefix || '') + ' ' + role.name;
+                    select.appendChild(opt);
+                });
+            }
+
+            // Заполнение select пользователей
+            function populateUserSelect() {
+                const select = userSelectRole;
+                select.innerHTML = '<option value="">Выберите пользователя</option>';
+                const usersSet = new Set();
+                tasks.forEach(function(task) { if (task.author) usersSet.add(task.author); });
+                chatRef.once('value', function(snap) {
+                    const data = snap.val();
+                    if (data) {
+                        Object.values(data).forEach(function(msg) {
+                            if (msg.author) usersSet.add(msg.author);
+                        });
+                    }
+                    supportRef.once('value', function(snap2) {
+                        const data2 = snap2.val();
+                        if (data2) {
+                            Object.values(data2).forEach(function(msg) {
+                                if (msg.userId) usersSet.add(msg.userId);
+                            });
+                        }
+                        adminUsers.forEach(function(name) { usersSet.add(name); });
+                        superadminRef.once('value', function(snap3) {
+                            const sa = snap3.val();
+                            if (sa) usersSet.add(sa);
+                            if (currentUser) usersSet.add(currentUser);
+                            usersSet.forEach(function(user) {
+                                if (user && user.trim() !== '') {
+                                    const opt = document.createElement('option');
+                                    opt.value = user;
+                                    opt.textContent = user;
+                                    select.appendChild(opt);
+                                }
+                            });
+                        });
+                    });
+                });
+            }
+
+            // Создание роли
+            addRoleBtn.addEventListener('click', function() {
+                const name = newRoleName.value.trim();
+                const prefix = newRolePrefix.value.trim() || '⭐';
+                const color = newRoleColor.value;
+                if (!name) {
+                    alert('Введите название роли');
+                    return;
+                }
+                rolesRef.push({
+                    name: name,
+                    prefix: prefix,
+                    color: color
+                }).then(function() {
+                    showNotification('Роль "' + name + '" создана!', 3000);
+                    newRoleName.value = '';
+                    newRolePrefix.value = '';
+                }).catch(function(e) {
+                    alert('Ошибка: ' + e.message);
+                });
+            });
+
+            // Назначение роли
+            assignRoleBtn.addEventListener('click', function() {
+                const user = userSelectRole.value;
+                const roleId = roleSelectAssign.value;
+                if (!user) { alert('Выберите пользователя'); return; }
+                if (!roleId) { alert('Выберите роль'); return; }
+                const role = rolesData[roleId];
+                if (!role) { alert('Роль не найдена'); return; }
+                userRolesRef.child(user).set(roleId).then(function() {
+                    showNotification('Роль "' + role.name + '" назначена пользователю ' + user, 3000);
+                    updateAssignedRolesUI();
+                    applyRolesToAll();
+                }).catch(function(e) { alert('Ошибка: ' + e.message); });
+            });
+
+            // Снятие роли
+            removeUserRoleBtn.addEventListener('click', function() {
+                const user = userSelectRole.value;
+                if (!user) { alert('Выберите пользователя'); return; }
+                if (!userRolesData[user]) { alert('У этого пользователя нет роли'); return; }
+                if (confirm('Снять роль с ' + user + '?')) {
+                    userRolesRef.child(user).remove().then(function() {
+                        showNotification('Роль снята с ' + user, 2000);
+                        updateAssignedRolesUI();
+                        applyRolesToAll();
+                    }).catch(function(e) { alert('Ошибка: ' + e.message); });
+                }
+            });
+
+            // Обновление списка назначенных ролей
+            function updateAssignedRolesUI() {
+                const container = assignedRolesList;
+                const entries = Object.entries(userRolesData);
+                if (entries.length === 0) {
+                    container.innerHTML = '<div style="padding:0.4rem;color:#6a7a9a;text-align:center;">Назначенных ролей нет</div>';
+                } else {
+                    let html = '';
+                    entries.forEach(function(entry) {
+                        const user = entry[0];
+                        const roleId = entry[1];
+                        const role = rolesData[roleId];
+                        if (!role) {
+                            userRolesRef.child(user).remove();
+                            return;
+                        }
+                        html += `
+                            <div style="display:flex; align-items:center; gap:0.8rem; padding:0.3rem 0.6rem; border-bottom:1px solid #2a2a44;">
+                                <span style="flex:1; color:#eaeef5;">${user}</span>
+                                <span style="color:${role.color};">${role.prefix || ''} ${role.name}</span>
+                                <button class="btn btn-outline btn-sm remove-assigned-role" data-user="${user}" style="padding:0.1rem 0.6rem; font-size:0.7rem;"><i class="fas fa-times"></i></button>
+                            </div>
+                        `;
+                    });
+                    container.innerHTML = html;
+                    container.querySelectorAll('.remove-assigned-role').forEach(function(btn) {
+                        btn.addEventListener('click', function() {
+                            const user = this.dataset.user;
+                            if (confirm('Снять роль с ' + user + '?')) {
+                                userRolesRef.child(user).remove().then(function() {
+                                    showNotification('Роль снята с ' + user, 2000);
+                                    updateAssignedRolesUI();
+                                    applyRolesToAll();
+                                }).catch(function(e) { alert('Ошибка: ' + e.message); });
+                            }
+                        });
+                    });
+                }
+            }
+
+            // Первоначальное применение ролей
+            setTimeout(applyRolesToAll, 1000);
+        })();
     </script>
 </body>
 </html>
