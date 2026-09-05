@@ -12,7 +12,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* Все стили (полный блок, как в предыдущих версиях) */
+        /* Полный блок стилей из предыдущего ответа */
         * { margin:0; padding:0; box-sizing:border-box; }
         body { font-family:'Inter',system-ui,sans-serif; background:#f5f7fc; color:#1a1a2e; transition:0.2s; padding:1rem; min-height:100vh; display:flex; justify-content:center; }
         body.dark { background:#12121a; color:#eaeef5; }
@@ -644,6 +644,28 @@ const taskTemplatesRef = db.ref('taskTemplates');
 const taskHistoryRef = db.ref('taskHistory');
 const usedNamesRef = db.ref('usedNames');
 
+// ----------------------- COOKIE ФУНКЦИИ -----------------------
+function setCookie(name, value, days) {
+    let expires = "";
+    if (days) {
+        const date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        expires = "; expires=" + date.toUTCString();
+    }
+    document.cookie = name + "=" + (value || "")  + expires + "; path=/";
+}
+
+function getCookie(name) {
+    const nameEQ = name + "=";
+    const ca = document.cookie.split(';');
+    for(let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+    }
+    return null;
+}
+
 // ----------------------- ЗАГРУЗКА ДАННЫХ -----------------------
 function loadAllData() {
     isLoading = true;
@@ -732,16 +754,29 @@ function loadAllData() {
 
 // ----------------------- ПОЛЬЗОВАТЕЛЬ -----------------------
 function loadUserName() {
-    const savedName = localStorage.getItem('hw6_userName');
+    // Пытаемся получить имя из localStorage или cookie
+    let savedName = null;
+    try {
+        savedName = localStorage.getItem('hw6_userName');
+    } catch(e) {
+        // localStorage недоступен
+    }
+    if (!savedName) {
+        savedName = getCookie('hw6_userName');
+    }
     if (savedName) {
         checkNameAvailability(savedName, taken => {
             if (taken) {
-                localStorage.removeItem('hw6_userName');
+                // Имя занято, очищаем хранилища
+                try { localStorage.removeItem('hw6_userName'); } catch(e) {}
+                setCookie('hw6_userName', '', -1); // удаляем cookie
                 promptUserName();
             } else {
                 currentUser = savedName;
                 formAuthor.value = currentUser;
-                // НЕ добавляем в usedNamesRef повторно! Иначе имя станет занятым.
+                // Сохраняем в оба места на случай сбоя
+                try { localStorage.setItem('hw6_userName', currentUser); } catch(e) {}
+                setCookie('hw6_userName', currentUser, 365);
                 updateRoleFlags();
             }
         });
@@ -760,15 +795,19 @@ function promptUserName() {
                 promptUserName();
             } else {
                 currentUser = trimmed;
-                localStorage.setItem('hw6_userName', currentUser);
+                // Сохраняем в localStorage
+                try { localStorage.setItem('hw6_userName', currentUser); } catch(e) {}
+                // Сохраняем в cookie
+                setCookie('hw6_userName', currentUser, 365);
                 formAuthor.value = currentUser;
-                usedNamesRef.push(currentUser); // добавляем только при первом вводе
+                usedNamesRef.push(currentUser);
                 updateRoleFlags();
             }
         });
     } else {
         currentUser = 'Аноним';
         formAuthor.value = currentUser;
+        // Для анонима не сохраняем
         updateRoleFlags();
     }
 }
