@@ -757,20 +757,11 @@ function loadUserName() {
         savedName = getCookie('hw6_userName');
     }
     if (savedName) {
-        checkNameAvailability(savedName, taken => {
-            if (taken) {
-                try { localStorage.removeItem('hw6_userName'); } catch(e) {}
-                setCookie('hw6_userName', '', -1);
-                promptUserName();
-            } else {
-                currentUser = savedName;
-                formAuthor.value = currentUser;
-                // ВАЖНО: не добавляем в usedNamesRef повторно!
-                try { localStorage.setItem('hw6_userName', currentUser); } catch(e) {}
-                setCookie('hw6_userName', currentUser, 365);
-                updateRoleFlags();
-            }
-        });
+        currentUser = savedName;
+        formAuthor.value = currentUser;
+        try { localStorage.setItem('hw6_userName', currentUser); } catch(e) {}
+        setCookie('hw6_userName', currentUser, 365);
+        updateRoleFlags();
     } else {
         promptUserName();
     }
