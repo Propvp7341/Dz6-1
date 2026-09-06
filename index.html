@@ -12,7 +12,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* Полный блок стилей из предыдущего ответа */
         * { margin:0; padding:0; box-sizing:border-box; }
         body { font-family:'Inter',system-ui,sans-serif; background:#f5f7fc; color:#1a1a2e; transition:0.2s; padding:1rem; min-height:100vh; display:flex; justify-content:center; }
         body.dark { background:#12121a; color:#eaeef5; }
@@ -261,7 +260,6 @@
     <div class="admin-panel" id="adminPanel">
         <h3>🛠 Админ-панель</h3>
 
-        <!-- ОБЩИЕ ФУНКЦИИ АДМИНА -->
         <div id="commonAdminSection">
             <div class="form-group">
                 <label>Бан пользователя</label>
@@ -300,7 +298,6 @@
             </div>
         </div>
 
-        <!-- СЕКЦИЯ ДЛЯ ЗАМА СУПЕРАДМИНА -->
         <div id="deputySection" style="display:none;">
             <h4>🛡️ Зам суперадмина</h4>
             <div class="form-group">
@@ -318,7 +315,6 @@
             <div id="deputyLogsContainer" style="max-height:200px;overflow-y:auto;border:1px solid #2a2a40;border-radius:12px;background:#0d0d1a;padding:0.2rem 0;margin-top:0.4rem;display:none;"></div>
         </div>
 
-        <!-- СЕКЦИЯ ДЛЯ СУПЕРАДМИНА -->
         <div id="superSection" style="display:none;">
             <h4>👑 Суперадмин</h4>
             <div class="form-group">
@@ -408,7 +404,6 @@
             </div>
         </div>
 
-        <!-- Логи и список забаненных -->
         <div id="logGroup" style="display:none;">
             <h4>📋 Логи действий</h4>
             <div style="display:flex;gap:0.3rem;flex-wrap:wrap;margin-bottom:0.3rem;">
@@ -754,27 +749,23 @@ function loadAllData() {
 
 // ----------------------- ПОЛЬЗОВАТЕЛЬ -----------------------
 function loadUserName() {
-    // Пытаемся получить имя из localStorage или cookie
     let savedName = null;
     try {
         savedName = localStorage.getItem('hw6_userName');
-    } catch(e) {
-        // localStorage недоступен
-    }
+    } catch(e) {}
     if (!savedName) {
         savedName = getCookie('hw6_userName');
     }
     if (savedName) {
         checkNameAvailability(savedName, taken => {
             if (taken) {
-                // Имя занято, очищаем хранилища
                 try { localStorage.removeItem('hw6_userName'); } catch(e) {}
-                setCookie('hw6_userName', '', -1); // удаляем cookie
+                setCookie('hw6_userName', '', -1);
                 promptUserName();
             } else {
                 currentUser = savedName;
                 formAuthor.value = currentUser;
-                // Сохраняем в оба места на случай сбоя
+                // ВАЖНО: не добавляем в usedNamesRef повторно!
                 try { localStorage.setItem('hw6_userName', currentUser); } catch(e) {}
                 setCookie('hw6_userName', currentUser, 365);
                 updateRoleFlags();
@@ -795,9 +786,7 @@ function promptUserName() {
                 promptUserName();
             } else {
                 currentUser = trimmed;
-                // Сохраняем в localStorage
                 try { localStorage.setItem('hw6_userName', currentUser); } catch(e) {}
-                // Сохраняем в cookie
                 setCookie('hw6_userName', currentUser, 365);
                 formAuthor.value = currentUser;
                 usedNamesRef.push(currentUser);
@@ -807,7 +796,6 @@ function promptUserName() {
     } else {
         currentUser = 'Аноним';
         formAuthor.value = currentUser;
-        // Для анонима не сохраняем
         updateRoleFlags();
     }
 }
@@ -828,7 +816,6 @@ function updateRoleFlags() {
         isModerator = moderatorUsers.includes(currentUser);
     }
     updateAdminUI();
-    // Загружаем логи, если пользователь имеет право
     if (isSuperAdmin || isDeputy) {
         loadLogs();
     }
