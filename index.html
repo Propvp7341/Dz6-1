@@ -1148,12 +1148,13 @@ function render() {
     });
 }
 
-// ----------------------- ПРОФИЛЬ -----------------------
+// ----------------------- ПРОФИЛЬ (исправлено) -----------------------
 function openUserProfile(userName) {
     const isOwnProfile = (userName === currentUser);
     const profile = userProfiles[userName] || { avatar: '👤', bio: '', telegram: '', max: '' };
+    // Исправлено: определяем роль по имени пользователя, а не по статусу текущего
     let role = 'Ученик';
-    if (userName === superadminName || isSuperAdmin) role = 'Суперадмин';
+    if (userName === superadminName) role = 'Суперадмин';
     else if (deputyUsers.includes(userName)) role = 'Зам суперадмина';
     else if (adminUsers.includes(userName)) role = 'Админ';
     else if (moderatorUsers.includes(userName)) role = 'Модератор';
@@ -1180,15 +1181,55 @@ function openUserProfile(userName) {
             ${profile.max ? `<div>💬 MAX: <a href="${profile.max}" target="_blank">${profile.max}</a></div>` : ''}
         </div>
     `;
+
+    // Кнопки для редактирования и входа в аккаунт
+    let buttonsHtml = '';
     if (isOwnProfile) {
-        html += `<div style="margin-top:1rem;"><button class="btn btn-primary btn-sm" id="editProfileBtn"><i class="fas fa-edit"></i> Редактировать</button></div>`;
+        buttonsHtml += `<button class="btn btn-primary btn-sm" id="editProfileBtn"><i class="fas fa-edit"></i> Редактировать</button>`;
     }
+    if (isSuperAdmin && !isOwnProfile) {
+        buttonsHtml += `<button class="btn btn-warning btn-sm" id="impersonateBtn" data-user="${userName}"><i class="fas fa-user-secret"></i> Войти в аккаунт</button>`;
+    }
+    if (buttonsHtml) {
+        html += `<div style="margin-top:1rem; display:flex; gap:0.5rem;">${buttonsHtml}</div>`;
+    }
+
     profileContent.innerHTML = html;
     profileModal.classList.add('active');
+
+    // Обработчики
     if (isOwnProfile) {
-        document.getElementById('editProfileBtn').addEventListener('click', () => { openEditProfile(); });
+        document.getElementById('editProfileBtn').addEventListener('click', () => {
+            openEditProfile();
+        });
+    }
+    const impersonateBtn = document.getElementById('impersonateBtn');
+    if (impersonateBtn) {
+        impersonateBtn.addEventListener('click', () => {
+            const targetUser = impersonateBtn.dataset.user;
+            impersonateUser(targetUser);
+        });
     }
 }
+
+// Функция входа в аккаунт другого пользователя (только суперадмин)
+function impersonateUser(targetUser) {
+    if (!isSuperAdmin) return;
+    if (!confirm(`Войти в аккаунт пользователя "${targetUser}"? Вы будете действовать от его имени.`)) return;
+    currentUser = targetUser;
+    formAuthor.value = currentUser;
+    try { localStorage.setItem('hw6_userName', currentUser); } catch(e) {}
+    setCookie('hw6_userName', currentUser, 365);
+    // Сбрасываем суперадмин-сессию, чтобы не было прав суперадмина
+    sessionStorage.removeItem('hw6_superadmin');
+    // Обновляем роли
+    updateRoleFlags();
+    // Закрываем профиль и перерисовываем
+    profileModal.classList.remove('active');
+    render();
+    showNotification(`✅ Вы вошли как ${targetUser}`, 3000);
+}
+
 function isBannedUser(userName) {
     return bannedUsers.some(b => (typeof b === 'string' ? b : b.name) === userName);
 }
