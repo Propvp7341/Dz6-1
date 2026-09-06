@@ -79,9 +79,11 @@
         .task-footer { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; margin-top:0.4rem; padding-top:0.4rem; border-top:1px solid #e8ecf4; }
         body.dark .task-footer { border-top-color:#2a2a40; }
         .author-block { display:flex; align-items:center; gap:0.5rem; }
-        .avatar { width:28px; height:28px; border-radius:40px; background:#dce4f0; display:flex; align-items:center; justify-content:center; font-weight:600; font-size:0.6rem; color:#1a2a4a; text-transform:uppercase; }
+        .avatar { width:28px; height:28px; border-radius:50%; background:#dce4f0; display:flex; align-items:center; justify-content:center; font-weight:600; font-size:0.6rem; color:#1a2a4a; text-transform:uppercase; overflow:hidden; }
+        .avatar img { width:100%; height:100%; object-fit:cover; }
         body.dark .avatar { background:#2a2a4a; color:#b8c8ff; }
-        .author-name { font-weight:500; font-size:0.85rem; }
+        .author-name { font-weight:500; font-size:0.85rem; cursor:pointer; }
+        .author-name:hover { text-decoration:underline; }
         .author-time { font-size:0.65rem; color:#6a7a9a; }
         body.dark .author-time { color:#8a8aa0; }
         .task-actions { display:flex; gap:0.2rem; align-items:center; flex-wrap:wrap; }
@@ -220,6 +222,88 @@
             #adminsBlock .admin-actions .row { flex-direction:column; }
             #adminsBlock .admin-actions .row input, #adminsBlock .admin-actions .row select { width:100%; }
         }
+        /* Дополнительные стили для читаемости в белой теме */
+        body:not(.dark) .modal-content,
+        body:not(.dark) .modal-content input,
+        body:not(.dark) .modal-content textarea,
+        body:not(.dark) .modal-content select {
+            color: #1a1a2e;
+        }
+        body:not(.dark) .author-name,
+        body:not(.dark) .task-text,
+        body:not(.dark) .task-subject,
+        body:not(.dark) .task-date {
+            color: #1a1a2e;
+        }
+        body:not(.dark) .admin-panel,
+        body:not(.dark) .admin-panel .form-group label {
+            color: #1a1a2e;
+        }
+        /* Стили для профиля */
+        .profile-avatar-option {
+            display:inline-flex; align-items:center; justify-content:center;
+            width:40px; height:40px; font-size:24px; border-radius:50%;
+            border:2px solid transparent; cursor:pointer; margin:0.2rem;
+            transition:0.2s;
+        }
+        .profile-avatar-option.selected { border-color:#1a73e8; background:#e8f0fe; }
+        .profile-avatar-option:hover { transform:scale(1.1); }
+        /* Исправление для тёмной темы */
+        body.dark .modal-content,
+        body.dark .modal-content input,
+        body.dark .modal-content textarea,
+        body.dark .modal-content select,
+        body.dark .modal-content label,
+        body.dark .modal-content h2,
+        body.dark .modal-content h3,
+        body.dark .modal-content h4,
+        body.dark .admin-panel,
+        body.dark .admin-panel label,
+        body.dark .admin-panel h3,
+        body.dark .admin-panel h4,
+        body.dark .task-text,
+        body.dark .task-subject,
+        body.dark .task-date,
+        body.dark .author-name,
+        body.dark .author-time,
+        body.dark .footer,
+        body.dark .filter-bar label,
+        body.dark .admin-panel .form-group label,
+        body.dark .support-msg .msg-text,
+        body.dark .support-msg .msg-author {
+            color: #eaeef5;
+        }
+        body.dark .card {
+            color: #eaeef5;
+        }
+        body.dark .admin-panel .stat-table th,
+        body.dark .admin-panel .stat-table td {
+            color: #eaeef5;
+            border-color: #2a2a40;
+        }
+        body.dark .btn {
+            color: #eaeef5;
+        }
+        body.dark .btn-outline:hover {
+            background: #2a2a40;
+            color: #ffffff;
+        }
+        body.dark .profile-avatar-option {
+            color: #eaeef5;
+            border-color: #3a4a6a;
+        }
+        body.dark .profile-avatar-option.selected {
+            background: #1a73e8;
+            color: #fff;
+            border-color: #1a73e8;
+        }
+        body.dark #profileContent a {
+            color: #8ab4ff;
+        }
+        body.dark #profileContent div[style*="background:#f0f2f5"] {
+            background: #1e1e2e !important;
+            color: #eaeef5;
+        }
     </style>
 </head>
 <body>
@@ -230,6 +314,7 @@
             <span class="stat-item" id="taskCount">0</span>
             <button class="btn btn-primary btn-sm" id="addBtn"><i class="fas fa-plus"></i> Добавить</button>
             <button class="btn btn-outline btn-sm admin-btn" id="adminBtn"><i class="fas fa-lock"></i> <span id="adminLabel">Админ</span></button>
+            <button class="btn btn-outline btn-sm" id="profileBtn"><i class="fas fa-user"></i> Профиль</button>
             <button class="btn btn-outline btn-sm" id="chatToggleBtn"><i class="fas fa-comment"></i> Чат</button>
             <button class="btn btn-outline btn-sm" id="supportBtn"><i class="fas fa-headset"></i> Связь</button>
             <button class="btn btn-outline btn-sm" id="adminsToggleBtn"><i class="fas fa-users-cog"></i> Администрация</button>
@@ -259,7 +344,6 @@
 
     <div class="admin-panel" id="adminPanel">
         <h3>🛠 Админ-панель</h3>
-
         <div id="commonAdminSection">
             <div class="form-group">
                 <label>Бан пользователя</label>
@@ -525,6 +609,15 @@
     </div>
 </div>
 
+<!-- Модальное окно профиля -->
+<div class="modal-overlay" id="profileModal">
+    <div class="modal-content">
+        <h2>👤 Профиль</h2>
+        <div id="profileContent" style="margin-bottom:1rem;"></div>
+        <button class="btn btn-outline btn-sm" id="profileCloseBtn">Закрыть</button>
+    </div>
+</div>
+
 <div class="notification" id="notification"></div>
 
 <script>
@@ -568,6 +661,7 @@ let activityChartInstance = null;
 let subjectsChartInstance = null;
 let superadminName = 'Костя Касьянов';
 const ADMIN_PASSWORD = 'tl132435534231t';
+let userProfiles = {}; // { userName: { avatar: '👤', bio: '', telegram: '', max: '' } }
 
 // DOM-элементы
 const taskListEl = document.getElementById('taskList');
@@ -618,6 +712,10 @@ const newAdminNameBlock = document.getElementById('newAdminNameBlock');
 const newAdminRoleBlock = document.getElementById('newAdminRoleBlock');
 const addAdminBlockBtn = document.getElementById('addAdminBlockBtn');
 const adminListBlockContainer = document.getElementById('adminListBlockContainer');
+const profileBtn = document.getElementById('profileBtn');
+const profileModal = document.getElementById('profileModal');
+const profileContent = document.getElementById('profileContent');
+const profileCloseBtn = document.getElementById('profileCloseBtn');
 
 // Firebase references
 firebase.initializeApp(firebaseConfig);
@@ -638,6 +736,7 @@ const customSubjectsRef = db.ref('customSubjects');
 const taskTemplatesRef = db.ref('taskTemplates');
 const taskHistoryRef = db.ref('taskHistory');
 const usedNamesRef = db.ref('usedNames');
+const usersRef = db.ref('users');
 
 // ----------------------- COOKIE ФУНКЦИИ -----------------------
 function setCookie(name, value, days) {
@@ -649,7 +748,6 @@ function setCookie(name, value, days) {
     }
     document.cookie = name + "=" + (value || "")  + expires + "; path=/";
 }
-
 function getCookie(name) {
     const nameEQ = name + "=";
     const ca = document.cookie.split(';');
@@ -674,88 +772,70 @@ function loadAllData() {
         if (isAdmin) showStats();
         document.getElementById('status').textContent = '✅ Firebase подключён';
     });
-
     bannedRef.on('value', snapshot => {
         const data = snapshot.val();
         bannedUsers = data ? Object.values(data) : [];
         render();
     });
-
     adminsRef.on('value', snapshot => {
         const data = snapshot.val();
         adminUsers = data ? Object.values(data) : [];
         updateAdminUI();
     });
-
     deputiesRef.on('value', snapshot => {
         const data = snapshot.val();
         deputyUsers = data ? Object.values(data) : [];
         updateAdminUI();
     });
-
     moderatorsRef.on('value', snapshot => {
         const data = snapshot.val();
         moderatorUsers = data ? Object.values(data) : [];
         updateAdminUI();
         renderModerators();
     });
-
     settingsRef.on('value', snapshot => {
         const data = snapshot.val();
-        if (data) {
-            settings = { ...settings, ...data };
-            applySettings();
-        }
+        if (data) { settings = { ...settings, ...data }; applySettings(); }
     });
-
     experimentalRef.on('value', snapshot => {
         const data = snapshot.val();
-        if (data) {
-            experimental = { ...experimental, ...data };
-            applyExperimentalSettings();
-        }
+        if (data) { experimental = { ...experimental, ...data }; applyExperimentalSettings(); }
     });
-
     badWordsRef.on('value', snapshot => {
         const data = snapshot.val();
         badWords = data ? Object.values(data) : [];
         renderBadWordsList();
     });
-
     customSubjectsRef.on('value', snapshot => {
         const data = snapshot.val();
         customSubjects = data ? Object.values(data) : [];
         updateSubjectFilter();
         renderCustomSubjects();
     });
-
     taskTemplatesRef.on('value', snapshot => {
         const data = snapshot.val();
         taskTemplates = data ? Object.entries(data).map(([id, val]) => ({ id, ...val })) : [];
         renderTemplates();
     });
-
     superadminRef.on('value', snapshot => {
         superadminName = snapshot.val() || 'Костя Касьянов';
         updateRoleFlags();
     });
+    usersRef.on('value', snapshot => {
+        const data = snapshot.val();
+        userProfiles = data || {};
+        render();
+    });
 
     loadUserName();
-
-    setTimeout(() => {
-        watchSupportMessages();
-    }, 1000);
+    setTimeout(() => { watchSupportMessages(); }, 1000);
 }
 
 // ----------------------- ПОЛЬЗОВАТЕЛЬ -----------------------
 function loadUserName() {
     let savedName = null;
-    try {
-        savedName = localStorage.getItem('hw6_userName');
-    } catch(e) {}
-    if (!savedName) {
-        savedName = getCookie('hw6_userName');
-    }
+    try { savedName = localStorage.getItem('hw6_userName'); } catch(e) {}
+    if (!savedName) savedName = getCookie('hw6_userName');
     if (savedName) {
         currentUser = savedName;
         formAuthor.value = currentUser;
@@ -766,7 +846,6 @@ function loadUserName() {
         promptUserName();
     }
 }
-
 function promptUserName() {
     const name = prompt('Введите ваше имя (оно должно быть уникальным):');
     if (name && name.trim()) {
@@ -781,6 +860,9 @@ function promptUserName() {
                 setCookie('hw6_userName', currentUser, 365);
                 formAuthor.value = currentUser;
                 usedNamesRef.push(currentUser);
+                if (!userProfiles[currentUser]) {
+                    usersRef.child(currentUser).set({ avatar: '👤', bio: '', telegram: '', max: '' });
+                }
                 updateRoleFlags();
             }
         });
@@ -790,26 +872,19 @@ function promptUserName() {
         updateRoleFlags();
     }
 }
-
 function checkNameAvailability(name, callback) {
     usedNamesRef.orderByValue().equalTo(name).once('value', snapshot => callback(snapshot.exists()));
 }
-
 function updateRoleFlags() {
     isSuperAdmin = sessionStorage.getItem('hw6_superadmin') === 'true' || (currentUser && (superadminName === currentUser));
-    if (isSuperAdmin) {
-        isAdmin = true;
-        isDeputy = true;
-        isModerator = true;
-    } else {
+    if (isSuperAdmin) { isAdmin = true; isDeputy = true; isModerator = true; }
+    else {
         isDeputy = deputyUsers.includes(currentUser);
         isAdmin = adminUsers.includes(currentUser) || isDeputy;
         isModerator = moderatorUsers.includes(currentUser);
     }
     updateAdminUI();
-    if (isSuperAdmin || isDeputy) {
-        loadLogs();
-    }
+    if (isSuperAdmin || isDeputy) loadLogs();
 }
 
 // ----------------------- ЦЕНЗУРА -----------------------
@@ -838,15 +913,10 @@ function applySettings() {
     } else {
         annBar.style.display = 'none';
     }
-    if (!settings.chatEnabled) chatToggleBtn.style.display = 'none';
-    else chatToggleBtn.style.display = '';
-    if (!settings.supportEnabled) supportBtn.style.display = 'none';
-    else supportBtn.style.display = '';
+    if (!settings.chatEnabled) chatToggleBtn.style.display = 'none'; else chatToggleBtn.style.display = '';
+    if (!settings.supportEnabled) supportBtn.style.display = 'none'; else supportBtn.style.display = '';
 }
-
-function applyExperimentalSettings() {
-    render();
-}
+function applyExperimentalSettings() { render(); }
 
 // ----------------------- ИНТЕРФЕЙС АДМИНКИ -----------------------
 function updateAdminUI() {
@@ -860,19 +930,10 @@ function updateAdminUI() {
     const bannedListGroup = document.getElementById('bannedListGroup');
     const adminManageGroup = document.getElementById('adminManageGroup');
 
-    if (isSuperAdmin) {
-        adminBtn.classList.add('active');
-        adminLabel.textContent = 'Суперадмин';
-    } else if (isDeputy) {
-        adminBtn.classList.add('active');
-        adminLabel.textContent = 'Зам';
-    } else if (isAdmin) {
-        adminBtn.classList.add('active');
-        adminLabel.textContent = 'Админ';
-    } else {
-        adminBtn.classList.remove('active');
-        adminLabel.textContent = 'Админ';
-    }
+    if (isSuperAdmin) { adminBtn.classList.add('active'); adminLabel.textContent = 'Суперадмин'; }
+    else if (isDeputy) { adminBtn.classList.add('active'); adminLabel.textContent = 'Зам'; }
+    else if (isAdmin) { adminBtn.classList.add('active'); adminLabel.textContent = 'Админ'; }
+    else { adminBtn.classList.remove('active'); adminLabel.textContent = 'Админ'; }
 
     if (isAdmin || isSuperAdmin || isDeputy) {
         adminPanel.classList.add('visible');
@@ -902,12 +963,18 @@ function updateAdminUI() {
     }
 
     if (typeof adminsBlockVisible !== 'undefined' && adminsBlockVisible) loadAdminsListBlock();
-
-    if (isSuperAdmin || isDeputy) chatClearBtn.style.display = 'inline-flex';
-    else chatClearBtn.style.display = 'none';
+    if (isSuperAdmin || isDeputy) chatClearBtn.style.display = 'inline-flex'; else chatClearBtn.style.display = 'none';
 }
 
 // ----------------------- ОТОБРАЖЕНИЕ ЗАДАНИЙ -----------------------
+function getAvatar(userName) {
+    const profile = userProfiles[userName];
+    if (profile && profile.avatar) {
+        if (profile.avatar.startsWith('http')) return `<img src="${profile.avatar}" alt="${userName}">`;
+        else return profile.avatar;
+    }
+    return userName.split(' ').map(s => s[0]).join('').toUpperCase().slice(0,2);
+}
 function render() {
     if (isLoading) {
         taskListEl.innerHTML = '<div class="loading-state"><i class="fas fa-spinner fa-spin"></i> Загрузка заданий...</div>';
@@ -937,10 +1004,8 @@ function render() {
         if (a.pinned && !b.pinned) return -1;
         if (!a.pinned && b.pinned) return 1;
         switch (experimental.sortBy) {
-            case 'likes':
-                return (b.likes?.length || 0) - (a.likes?.length || 0);
-            case 'subject':
-                return a.subject.localeCompare(b.subject);
+            case 'likes': return (b.likes?.length || 0) - (a.likes?.length || 0);
+            case 'subject': return a.subject.localeCompare(b.subject);
             default:
                 const da = new Date(a.date + 'T00:00:00');
                 const db = new Date(b.date + 'T00:00:00');
@@ -965,7 +1030,7 @@ function render() {
         const dayOfWeek = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'][taskDate.getDay()];
         let author = filterBadWords(task.author || 'Аноним');
         if (experimental.anonymizeTasks && !isAdmin) author = 'Скрыто';
-        const initials = author.split(' ').map(s => s[0]).join('').toUpperCase().slice(0, 2);
+        const avatarHtml = getAvatar(task.author || 'Аноним');
         let attachHtml = '';
         if (task.attachment && task.attachment.trim() !== '') {
             const url = task.attachment.trim();
@@ -1003,8 +1068,8 @@ function render() {
             ${adminNote}
             <div class="task-footer">
                 <div class="author-block">
-                    <div class="avatar">${initials}</div>
-                    <div><span class="author-name">${author}</span><span class="author-time"> · <i class="far fa-clock"></i> ${new Date(task.timestamp || task.id).toLocaleString('ru', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span></div>
+                    <div class="avatar">${avatarHtml}</div>
+                    <div><span class="author-name" data-user="${task.author || 'Аноним'}">${author}</span><span class="author-time"> · <i class="far fa-clock"></i> ${new Date(task.timestamp || task.id).toLocaleString('ru', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span></div>
                 </div>
                 <div class="task-actions">
                     <button class="like-btn ${userLiked ? 'liked' : ''} ${isBanned ? 'disabled' : ''}" data-id="${task.id}" ${isBanned ? 'style="opacity:0.4;cursor:not-allowed;"' : ''}><i class="fas fa-heart"></i><span class="like-count">${likeCount}</span></button>
@@ -1016,6 +1081,13 @@ function render() {
 
     taskListEl.innerHTML = html;
 
+    taskListEl.querySelectorAll('.author-name').forEach(el => {
+        el.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const userName = this.dataset.user;
+            openUserProfile(userName);
+        });
+    });
     taskListEl.querySelectorAll('.like-btn').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.stopPropagation();
@@ -1073,6 +1145,92 @@ function render() {
                 addLog('Проверка задания', 'Предмет: ' + task.subject + ' (статус: ' + (!task.verified ? 'проверено' : 'снято') + ')');
             }
         });
+    });
+}
+
+// ----------------------- ПРОФИЛЬ -----------------------
+function openUserProfile(userName) {
+    const isOwnProfile = (userName === currentUser);
+    const profile = userProfiles[userName] || { avatar: '👤', bio: '', telegram: '', max: '' };
+    let role = 'Ученик';
+    if (userName === superadminName || isSuperAdmin) role = 'Суперадмин';
+    else if (deputyUsers.includes(userName)) role = 'Зам суперадмина';
+    else if (adminUsers.includes(userName)) role = 'Админ';
+    else if (moderatorUsers.includes(userName)) role = 'Модератор';
+
+    const userTasks = tasks.filter(t => t.author === userName);
+    const totalLikesReceived = userTasks.reduce((sum, t) => sum + (t.likes?.length || 0), 0);
+    const totalLikesGiven = tasks.filter(t => t.likes && t.likes.includes(userName)).length;
+
+    let html = `
+        <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1rem;">
+            <div class="avatar" style="width:48px;height:48px;font-size:1.2rem;">${getAvatar(userName)}</div>
+            <div>
+                <div style="font-weight:600; font-size:1.1rem;">${filterBadWords(userName)}</div>
+                <div style="color:#6a7a9a; font-size:0.85rem;">${role}</div>
+            </div>
+        </div>
+        <div style="background:#f0f2f5; border-radius:12px; padding:0.8rem;">
+            <div>📝 О себе: ${profile.bio ? filterBadWords(profile.bio) : 'нет описания'}</div>
+            <div>📚 Добавлено заданий: <b>${userTasks.length}</b></div>
+            <div>❤️ Получено лайков: <b>${totalLikesReceived}</b></div>
+            <div>👍 Поставлено лайков: <b>${totalLikesGiven}</b></div>
+            ${isBannedUser(userName) ? '<div style="color:#ea4335; margin-top:0.5rem;">⛔ Пользователь забанен</div>' : ''}
+            ${profile.telegram ? `<div>📨 Telegram: <a href="https://t.me/${profile.telegram}" target="_blank">@${profile.telegram}</a></div>` : ''}
+            ${profile.max ? `<div>💬 MAX: <a href="${profile.max}" target="_blank">${profile.max}</a></div>` : ''}
+        </div>
+    `;
+    if (isOwnProfile) {
+        html += `<div style="margin-top:1rem;"><button class="btn btn-primary btn-sm" id="editProfileBtn"><i class="fas fa-edit"></i> Редактировать</button></div>`;
+    }
+    profileContent.innerHTML = html;
+    profileModal.classList.add('active');
+    if (isOwnProfile) {
+        document.getElementById('editProfileBtn').addEventListener('click', () => { openEditProfile(); });
+    }
+}
+function isBannedUser(userName) {
+    return bannedUsers.some(b => (typeof b === 'string' ? b : b.name) === userName);
+}
+function openEditProfile() {
+    const profile = userProfiles[currentUser] || { avatar: '👤', bio: '', telegram: '', max: '' };
+    const avatarOptions = ['👤','🐱','🐶','🦊','🐼','🦁','🐸','🐵','🐰','🐭','🐹','🐻','🐨','🐯','🦄','🐷','🐮','🐗','🐺','🐴'];
+    let avatarHtml = '<div style="margin-bottom:0.5rem;">Выберите аватар:</div><div style="display:flex; flex-wrap:wrap; gap:0.3rem;">';
+    avatarOptions.forEach(av => {
+        avatarHtml += `<span class="profile-avatar-option ${profile.avatar === av ? 'selected' : ''}" data-avatar="${av}" style="font-size:24px; cursor:pointer;">${av}</span>`;
+    });
+    avatarHtml += '</div>';
+    avatarHtml += '<div class="form-group"><label>Или ссылка на картинку</label><input type="text" id="editAvatarUrl" placeholder="https://..." value="' + (profile.avatar?.startsWith('http') ? profile.avatar : '') + '"></div>';
+    avatarHtml += '<div class="form-group"><label>О себе</label><textarea id="editBio" placeholder="Расскажите о себе">' + (profile.bio || '') + '</textarea></div>';
+    avatarHtml += '<div class="form-group"><label>Telegram (username без @)</label><input type="text" id="editTelegram" placeholder="username" value="' + (profile.telegram || '') + '"></div>';
+    avatarHtml += '<div class="form-group"><label>MAX (ссылка на профиль)</label><input type="text" id="editMax" placeholder="https://max.ru/..." value="' + (profile.max || '') + '"></div>';
+    profileContent.innerHTML = `
+        <h3>Редактирование профиля</h3>
+        ${avatarHtml}
+        <div class="modal-actions">
+            <button class="btn btn-outline btn-sm" id="cancelEditProfileBtn">Отмена</button>
+            <button class="btn btn-primary btn-sm" id="saveProfileBtn">Сохранить</button>
+        </div>
+    `;
+    profileContent.querySelectorAll('.profile-avatar-option').forEach(el => {
+        el.addEventListener('click', function() {
+            profileContent.querySelectorAll('.profile-avatar-option').forEach(e => e.classList.remove('selected'));
+            this.classList.add('selected');
+            document.getElementById('editAvatarUrl').value = '';
+        });
+    });
+    document.getElementById('cancelEditProfileBtn').addEventListener('click', () => { openUserProfile(currentUser); });
+    document.getElementById('saveProfileBtn').addEventListener('click', () => {
+        const selectedEmoji = profileContent.querySelector('.profile-avatar-option.selected')?.dataset.avatar;
+        const url = document.getElementById('editAvatarUrl').value.trim();
+        const bio = document.getElementById('editBio').value.trim();
+        const telegram = document.getElementById('editTelegram').value.trim().replace(/^@/, '');
+        const max = document.getElementById('editMax').value.trim();
+        const avatar = url || selectedEmoji || '👤';
+        usersRef.child(currentUser).update({ avatar, bio, telegram, max }).then(() => {
+            showNotification('✅ Профиль обновлён', 2000);
+            openUserProfile(currentUser);
+        }).catch(err => alert('Ошибка: ' + err.message));
     });
 }
 
@@ -1144,11 +1302,8 @@ function saveTask() {
             }, 1000);
             setTimeout(closeModal, 500);
         }
-    }).catch(err => {
-        alert('Ошибка: ' + err.message);
-    });
+    }).catch(err => { alert('Ошибка: ' + err.message); });
 }
-
 function toggleLike(taskId) {
     if (bannedUsers.includes(currentUser)) { showNotification('❌ Вы забанены!', 3000); return; }
     const task = tasks.find(t => t.id === taskId);
@@ -1159,7 +1314,6 @@ function toggleLike(taskId) {
     tasksRef.child(taskId).update({ likes });
     addLog('Лайк', 'Задание: ' + task.subject);
 }
-
 function togglePin(taskId) {
     if (!isAdmin) return;
     const task = tasks.find(t => t.id === taskId);
@@ -1176,10 +1330,7 @@ function openHistoryModal(taskId) {
     modal.classList.add('active');
     taskHistoryRef.child(taskId).orderByChild('timestamp').once('value', snapshot => {
         const data = snapshot.val();
-        if (!data) {
-            content.innerHTML = '<div style="text-align:center;">История пуста</div>';
-            return;
-        }
+        if (!data) { content.innerHTML = '<div style="text-align:center;">История пуста</div>'; return; }
         const entries = Object.values(data).reverse();
         let html = '';
         entries.forEach((entry, index) => {
@@ -1232,12 +1383,8 @@ function showStats() {
     });
     html += '</table>';
     document.getElementById('adminStats').innerHTML = html;
-
-    if (isSuperAdmin) {
-        renderAnalytics();
-    }
+    if (isSuperAdmin) renderAnalytics();
 }
-
 function renderAnalytics() {
     const days = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
     const counts = [0,0,0,0,0,0,0];
@@ -1250,34 +1397,18 @@ function renderAnalytics() {
     if (activityChartInstance) activityChartInstance.destroy();
     activityChartInstance = new Chart(ctx1, {
         type: 'bar',
-        data: {
-            labels: days,
-            datasets: [{
-                label: 'Задания по дням недели',
-                data: counts,
-                backgroundColor: 'rgba(26,115,232,0.5)'
-            }]
-        },
+        data: { labels: days, datasets: [{ label: 'Задания по дням недели', data: counts, backgroundColor: 'rgba(26,115,232,0.5)' }] },
         options: { responsive: true, maintainAspectRatio: false }
     });
-
     const subjectCounts = {};
-    tasks.forEach(task => {
-        subjectCounts[task.subject] = (subjectCounts[task.subject] || 0) + 1;
-    });
+    tasks.forEach(task => { subjectCounts[task.subject] = (subjectCounts[task.subject] || 0) + 1; });
     const labels = Object.keys(subjectCounts);
     const values = Object.values(subjectCounts);
     const ctx2 = document.getElementById('subjectsChart').getContext('2d');
     if (subjectsChartInstance) subjectsChartInstance.destroy();
     subjectsChartInstance = new Chart(ctx2, {
         type: 'pie',
-        data: {
-            labels: labels,
-            datasets: [{
-                data: values,
-                backgroundColor: labels.map((_, i) => `hsl(${i*30}, 70%, 60%)`)
-            }]
-        },
+        data: { labels: labels, datasets: [{ data: values, backgroundColor: labels.map((_, i) => `hsl(${i*30}, 70%, 60%)`) }] },
         options: { responsive: true, maintainAspectRatio: false }
     });
 }
@@ -1296,24 +1427,16 @@ function addLog(action, details) {
               action.toLowerCase().includes('лайк') ? 'like' : 'other'
     });
 }
-
 function loadLogs() {
     logsRef.orderByChild('timestamp').limitToLast(200).once('value', snapshot => {
         const data = snapshot.val();
-        if (data) {
-            allLogs = Object.values(data).reverse();
-            renderLogs(allLogs);
-        }
+        if (data) { allLogs = Object.values(data).reverse(); renderLogs(allLogs); }
     });
 }
-
 function renderLogs(logs) {
     const container = document.getElementById('logContainer');
     if (!container) return;
-    if (!logs || logs.length === 0) {
-        container.innerHTML = '<div style="padding:0.4rem;color:#6a7a9a;text-align:center;">Логов пока нет</div>';
-        return;
-    }
+    if (!logs || logs.length === 0) { container.innerHTML = '<div style="padding:0.4rem;color:#6a7a9a;text-align:center;">Логов пока нет</div>'; return; }
     let html = '';
     logs.forEach(log => {
         const time = new Date(log.timestamp).toLocaleString('ru', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit', second:'2-digit' });
@@ -1337,7 +1460,6 @@ function banUser(name, hours = 0) {
     addLog('Бан пользователя', name + (hours > 0 ? ' на ' + hours + 'ч' : ''));
     loadBannedList();
 }
-
 function unbanUser(name) {
     if (!isAdmin) return;
     bannedRef.once('value', snapshot => {
@@ -1353,16 +1475,12 @@ function unbanUser(name) {
     addLog('Разбан пользователя', name);
     loadBannedList();
 }
-
 function loadBannedList() {
     bannedRef.on('value', snapshot => {
         const data = snapshot.val();
         const container = document.getElementById('bannedListContainer');
         if (!container) return;
-        if (!data) {
-            container.innerHTML = '<div style="padding:0.4rem;color:#6a7a9a;text-align:center;">Забаненных нет</div>';
-            return;
-        }
+        if (!data) { container.innerHTML = '<div style="padding:0.4rem;color:#6a7a9a;text-align:center;">Забаненных нет</div>'; return; }
         let html = '';
         Object.entries(data).forEach(([key, val]) => {
             const name = typeof val === 'string' ? val : val.name;
@@ -1374,10 +1492,7 @@ function loadBannedList() {
         container.querySelectorAll('.unban-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 const key = this.dataset.key;
-                if (confirm('Разбанить?')) {
-                    bannedRef.child(key).remove();
-                    loadBannedList();
-                }
+                if (confirm('Разбанить?')) { bannedRef.child(key).remove(); loadBannedList(); }
             });
         });
     });
@@ -1391,16 +1506,10 @@ function loadSupportMessages() {
         const data = snapshot.val();
         const container = document.getElementById('supportMessages');
         container.innerHTML = '';
-        if (!data) {
-            container.innerHTML = '<div style="color:#6a7a9a;text-align:center;padding:1rem;">📭 Нет сообщений</div>';
-            return;
-        }
+        if (!data) { container.innerHTML = '<div style="color:#6a7a9a;text-align:center;padding:1rem;">📭 Нет сообщений</div>'; return; }
         let messages = Object.entries(data).map(([id, val]) => ({ id, ...val }));
-        if (isAdminUser) {
-            messages.sort((a,b) => a.timestamp - b.timestamp);
-        } else {
-            messages = messages.filter(msg => msg.userId === currentUser || msg.from === 'admin' || msg.from === 'superadmin' || msg.from === 'deputy');
-        }
+        if (isAdminUser) { messages.sort((a,b) => a.timestamp - b.timestamp); }
+        else { messages = messages.filter(msg => msg.userId === currentUser || msg.from === 'admin' || msg.from === 'superadmin' || msg.from === 'deputy'); }
         let html = '';
         messages.forEach(msg => {
             const time = new Date(msg.timestamp).toLocaleString('ru', { hour:'2-digit', minute:'2-digit' });
@@ -1422,9 +1531,7 @@ function loadSupportMessages() {
         container.querySelectorAll('.delete-support-msg').forEach(btn => {
             btn.addEventListener('click', function() {
                 const id = this.dataset.id;
-                if (confirm('Удалить сообщение?')) {
-                    supportRef.child(id).remove().then(() => loadSupportMessages());
-                }
+                if (confirm('Удалить сообщение?')) { supportRef.child(id).remove().then(() => loadSupportMessages()); }
             });
         });
         container.querySelectorAll('.reply-btn').forEach(btn => {
@@ -1436,7 +1543,6 @@ function loadSupportMessages() {
         container.scrollTop = container.scrollHeight;
     });
 }
-
 function sendSupportMessage() {
     let text = supportInput.value.trim();
     if (!text) return;
@@ -1476,7 +1582,6 @@ function sendSupportMessage() {
         });
     }
 }
-
 function watchSupportMessages() {
     supportRef.limitToLast(1).on('child_added', snapshot => {
         const data = snapshot.val();
@@ -1491,7 +1596,6 @@ function watchSupportMessages() {
         }
     });
 }
-
 function showPersistentNotification(text) {
     const notificationId = 'notif_' + btoa(encodeURIComponent(text)).slice(0,24);
     if (localStorage.getItem('closed_' + notificationId) === 'true') return;
@@ -1535,28 +1639,20 @@ function appendChatMessage(data) {
     div.querySelector('.delete-msg-btn')?.addEventListener('click', function() {
         const id = this.dataset.id;
         if (!id) return;
-        if (confirm('Удалить сообщение?')) {
-            chatRef.child(id).remove();
-        }
+        if (confirm('Удалить сообщение?')) { chatRef.child(id).remove(); }
     });
 }
-
 function sendChatMessage() {
     if (!currentUser) { alert('Войдите'); return; }
     if (bannedUsers.includes(currentUser)) { alert('❌ Вы забанены в чате!'); return; }
     if (experimental.nightChat) {
         const hour = new Date().getHours();
-        if (hour >= 23 || hour < 7) {
-            alert('🌙 Ночью чат недоступен (23:00-7:00)');
-            return;
-        }
+        if (hour >= 23 || hour < 7) { alert('🌙 Ночью чат недоступен (23:00-7:00)'); return; }
     }
     let text = chatInput.value.trim();
     if (!text) return;
     text = filterBadWords(text);
-    chatRef.push({ text, author: currentUser, timestamp: Date.now() }).then(() => {
-        chatInput.value = '';
-    });
+    chatRef.push({ text, author: currentUser, timestamp: Date.now() }).then(() => { chatInput.value = ''; });
 }
 
 // ----------------------- БЛОК АДМИНИСТРАЦИИ -----------------------
@@ -1572,7 +1668,6 @@ function toggleAdminsBlock() {
         adminsToggleBtn.classList.remove('active');
     }
 }
-
 function loadAdminsListBlock() {
     const container = adminsListBlock;
     container.innerHTML = '<div style="color:#6a7a9a;text-align:center;padding:1rem;">Загрузка...</div>';
@@ -1593,15 +1688,10 @@ function loadAdminsListBlock() {
                 </div>`;
             });
             container.innerHTML = html;
-            if (isSuperAdmin) {
-                adminManageBlock.style.display = 'block';
-                loadAdminListBlock();
-            } else {
-                adminManageBlock.style.display = 'none';
-            }
+            if (isSuperAdmin) { adminManageBlock.style.display = 'block'; loadAdminListBlock(); }
+            else { adminManageBlock.style.display = 'none'; }
         });
 }
-
 function loadAdminListBlock() {
     const container = adminListBlockContainer;
     container.innerHTML = 'Загрузка...';
@@ -1636,22 +1726,11 @@ function loadAdminListBlock() {
 // ----------------------- РЕЗЕРВНОЕ КОПИРОВАНИЕ -----------------------
 async function downloadBackup() {
     const refs = {
-        tasks: tasksRef,
-        banned: bannedRef,
-        admins: adminsRef,
-        deputies: deputiesRef,
-        moderators: moderatorsRef,
-        logs: logsRef,
-        chat: chatRef,
-        support: supportRef,
-        settings: settingsRef,
-        experimental: experimentalRef,
-        badWords: badWordsRef,
-        customSubjects: customSubjectsRef,
-        taskTemplates: taskTemplatesRef,
-        taskHistory: taskHistoryRef,
-        superadmin: superadminRef,
-        usedNames: usedNamesRef
+        tasks: tasksRef, banned: bannedRef, admins: adminsRef, deputies: deputiesRef,
+        moderators: moderatorsRef, logs: logsRef, chat: chatRef, support: supportRef,
+        settings: settingsRef, experimental: experimentalRef, badWords: badWordsRef,
+        customSubjects: customSubjectsRef, taskTemplates: taskTemplatesRef,
+        taskHistory: taskHistoryRef, superadmin: superadminRef, usedNames: usedNamesRef, users: usersRef
     };
     const data = {};
     for (const [key, ref] of Object.entries(refs)) {
@@ -1665,7 +1744,6 @@ async function downloadBackup() {
     a.click();
     addLog('Резервное копирование', 'Скачана копия БД');
 }
-
 function restoreBackup(file) {
     const reader = new FileReader();
     reader.onload = async (e) => {
@@ -1673,22 +1751,11 @@ function restoreBackup(file) {
             const data = JSON.parse(e.target.result);
             if (!confirm('Восстановить данные? Это перезапишет текущие!')) return;
             const refs = {
-                tasks: tasksRef,
-                banned: bannedRef,
-                admins: adminsRef,
-                deputies: deputiesRef,
-                moderators: moderatorsRef,
-                logs: logsRef,
-                chat: chatRef,
-                support: supportRef,
-                settings: settingsRef,
-                experimental: experimentalRef,
-                badWords: badWordsRef,
-                customSubjects: customSubjectsRef,
-                taskTemplates: taskTemplatesRef,
-                taskHistory: taskHistoryRef,
-                superadmin: superadminRef,
-                usedNames: usedNamesRef
+                tasks: tasksRef, banned: bannedRef, admins: adminsRef, deputies: deputiesRef,
+                moderators: moderatorsRef, logs: logsRef, chat: chatRef, support: supportRef,
+                settings: settingsRef, experimental: experimentalRef, badWords: badWordsRef,
+                customSubjects: customSubjectsRef, taskTemplates: taskTemplatesRef,
+                taskHistory: taskHistoryRef, superadmin: superadminRef, usedNames: usedNamesRef, users: usersRef
             };
             for (const [key, ref] of Object.entries(refs)) {
                 if (data[key]) await ref.set(data[key]);
@@ -1696,9 +1763,7 @@ function restoreBackup(file) {
             }
             showNotification('✅ Восстановление завершено', 5000);
             addLog('Восстановление', 'БД восстановлена из файла');
-        } catch (err) {
-            alert('Ошибка: ' + err.message);
-        }
+        } catch (err) { alert('Ошибка: ' + err.message); }
     };
     reader.readAsText(file);
 }
@@ -1707,18 +1772,13 @@ function restoreBackup(file) {
 function renderBadWordsList() {
     const container = document.getElementById('badWordsList');
     if (!container) return;
-    if (!badWords.length) {
-        container.innerHTML = 'Список пуст';
-        return;
-    }
+    if (!badWords.length) { container.innerHTML = 'Список пуст'; return; }
     container.innerHTML = badWords.map(word => `<span style="background:#2a2a40;padding:0.2rem 0.5rem;border-radius:20px;margin:0.1rem;display:inline-block;">${word} <button class="removeBadWord" data-word="${word}" style="background:none;border:none;color:#ea4335;cursor:pointer;">×</button></span>`).join('');
     container.querySelectorAll('.removeBadWord').forEach(btn => {
         btn.addEventListener('click', function() {
             const word = this.dataset.word;
             badWordsRef.orderByValue().equalTo(word).once('value', snapshot => {
-                snapshot.forEach(child => {
-                    badWordsRef.child(child.key).remove();
-                });
+                snapshot.forEach(child => { badWordsRef.child(child.key).remove(); });
             });
         });
     });
@@ -1730,13 +1790,10 @@ function updateSubjectFilter() {
     select.querySelectorAll('option.custom').forEach(opt => opt.remove());
     customSubjects.forEach(subject => {
         const option = document.createElement('option');
-        option.value = subject;
-        option.textContent = subject;
-        option.className = 'custom';
+        option.value = subject; option.textContent = subject; option.className = 'custom';
         select.appendChild(option);
     });
 }
-
 function renderCustomSubjects() {
     const container = document.getElementById('customSubjectsList');
     if (!container) return;
@@ -1747,10 +1804,7 @@ function renderCustomSubjects() {
 function renderTemplates() {
     const container = document.getElementById('templatesList');
     if (!container) return;
-    if (!taskTemplates.length) {
-        container.innerHTML = 'Нет шаблонов';
-        return;
-    }
+    if (!taskTemplates.length) { container.innerHTML = 'Нет шаблонов'; return; }
     container.innerHTML = taskTemplates.map(t => `<div style="display:flex;justify-content:space-between;align-items:center;padding:0.2rem 0.4rem;border-bottom:1px solid #2a2a40;"><span>${filterBadWords(t.name)}</span><button class="useTemplateBtn" data-id="${t.id}">Использовать</button></div>`).join('');
     container.querySelectorAll('.useTemplateBtn').forEach(btn => {
         btn.addEventListener('click', function() {
@@ -1777,13 +1831,10 @@ function archiveOldTasks(days) {
     showNotification('Архивация выполнена', 3000);
     addLog('Автоматизация', 'Архивированы задания старше ' + days + ' дней');
 }
-
 function cleanOldLogs(days) {
     const cutoff = Date.now() - days * 86400000;
     logsRef.orderByChild('timestamp').endAt(cutoff).once('value', snapshot => {
-        snapshot.forEach(child => {
-            logsRef.child(child.key).remove();
-        });
+        snapshot.forEach(child => { logsRef.child(child.key).remove(); });
     });
     showNotification('Логи очищены', 3000);
     addLog('Автоматизация', 'Удалены логи старше ' + days + ' дней');
@@ -1805,10 +1856,7 @@ function saveExperimental() {
 function renderModerators() {
     const container = document.getElementById('moderatorsList');
     if (!container) return;
-    if (!moderatorUsers.length) {
-        container.innerHTML = 'Модераторов нет';
-        return;
-    }
+    if (!moderatorUsers.length) { container.innerHTML = 'Модераторов нет'; return; }
     container.innerHTML = moderatorUsers.map(name => `
         <span style="background:#2a2a40;padding:0.2rem 0.5rem;border-radius:20px;margin:0.1rem;display:inline-flex;align-items:center;gap:0.3rem;">
             ${filterBadWords(name)}
@@ -1821,9 +1869,7 @@ function renderModerators() {
             if (confirm(`Удалить модератора ${name}?`)) {
                 moderatorsRef.once('value', snapshot => {
                     snapshot.forEach(child => {
-                        if (child.val() === name) {
-                            moderatorsRef.child(child.key).remove();
-                        }
+                        if (child.val() === name) { moderatorsRef.child(child.key).remove(); }
                     });
                 });
             }
@@ -1844,6 +1890,9 @@ document.addEventListener('DOMContentLoaded', () => {
     subjectFilter.addEventListener('change', render);
     archiveFilter.addEventListener('change', render);
     adminBtn.addEventListener('click', toggleAdmin);
+    profileBtn.addEventListener('click', () => openUserProfile(currentUser));
+    profileCloseBtn.addEventListener('click', () => profileModal.classList.remove('active'));
+    profileModal.addEventListener('click', (e) => { if (e.target === e.currentTarget) profileModal.classList.remove('active'); });
     chatToggleBtn.addEventListener('click', toggleChat);
     chatSendBtn.addEventListener('click', sendChatMessage);
     chatCloseBtn.addEventListener('click', () => chatModal.classList.remove('active'));
@@ -1878,12 +1927,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('addTemplateBtn').addEventListener('click', () => {
         const name = document.getElementById('newTemplateName').value.trim();
         if (name) {
-            taskTemplatesRef.push({
-                name,
-                subject: formSubject.value,
-                text: formText.value,
-                author: currentUser
-            });
+            taskTemplatesRef.push({ name, subject: formSubject.value, text: formText.value, author: currentUser });
             document.getElementById('newTemplateName').value = '';
         }
     });
@@ -1897,9 +1941,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const name = document.getElementById('deputyAddAdminInput').value.trim();
         if (name) {
             adminsRef.once('value', snapshot => {
-                snapshot.forEach(child => {
-                    if (child.val() === name) adminsRef.child(child.key).remove();
-                });
+                snapshot.forEach(child => { if (child.val() === name) adminsRef.child(child.key).remove(); });
             });
         }
         document.getElementById('deputyAddAdminInput').value = '';
@@ -1928,29 +1970,18 @@ document.addEventListener('DOMContentLoaded', () => {
         settings.chatEnabled = document.getElementById('settingsChatEnabled').checked;
         settings.supportEnabled = document.getElementById('settingsSupportEnabled').checked;
         settings.announcement = document.getElementById('settingsAnnouncement').value.trim();
-        settingsRef.set(settings).then(() => {
-            showNotification('Настройки сохранены', 2000);
-            applySettings();
-        });
+        settingsRef.set(settings).then(() => { showNotification('Настройки сохранены', 2000); applySettings(); });
     });
     document.getElementById('downloadBackupBtn').addEventListener('click', downloadBackup);
     document.getElementById('restoreBackupBtn').addEventListener('click', () => document.getElementById('restoreFileInput').click());
-    document.getElementById('restoreFileInput').addEventListener('change', e => {
-        if (e.target.files[0]) restoreBackup(e.target.files[0]);
-    });
+    document.getElementById('restoreFileInput').addEventListener('change', e => { if (e.target.files[0]) restoreBackup(e.target.files[0]); });
     document.getElementById('addBadWordBtn').addEventListener('click', () => {
         const word = document.getElementById('newBadWord').value.trim().toLowerCase();
         if (word) badWordsRef.push(word);
         document.getElementById('newBadWord').value = '';
     });
-    document.getElementById('runArchiveBtn').addEventListener('click', () => {
-        const days = parseInt(document.getElementById('archiveDays').value) || 30;
-        archiveOldTasks(days);
-    });
-    document.getElementById('runLogCleanBtn').addEventListener('click', () => {
-        const days = parseInt(document.getElementById('logDays').value) || 7;
-        cleanOldLogs(days);
-    });
+    document.getElementById('runArchiveBtn').addEventListener('click', () => { const days = parseInt(document.getElementById('archiveDays').value) || 30; archiveOldTasks(days); });
+    document.getElementById('runLogCleanBtn').addEventListener('click', () => { const days = parseInt(document.getElementById('logDays').value) || 7; cleanOldLogs(days); });
     document.getElementById('addModeratorBtn').addEventListener('click', () => {
         const name = document.getElementById('newModerator').value.trim();
         if (name) moderatorsRef.push(name);
@@ -1962,12 +1993,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('refreshLogsBtn').addEventListener('click', loadLogs);
     document.getElementById('clearLogsBtn').addEventListener('click', () => {
-        if (confirm('Очистить все логи?')) {
-            logsRef.remove().then(() => {
-                showNotification('Логи очищены', 2000);
-                loadLogs();
-            });
-        }
+        if (confirm('Очистить все логи?')) { logsRef.remove().then(() => { showNotification('Логи очищены', 2000); loadLogs(); }); }
     });
     document.getElementById('exportLogsBtn').addEventListener('click', () => {
         if (!allLogs.length) { alert('Нет логов'); return; }
@@ -1997,9 +2023,7 @@ document.addEventListener('DOMContentLoaded', () => {
         themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
     }
     if (sessionStorage.getItem('hw6_superadmin') === 'true') {
-        isSuperAdmin = true;
-        isAdmin = true;
-        isDeputy = true;
+        isSuperAdmin = true; isAdmin = true; isDeputy = true;
         updateAdminUI();
     }
 });
@@ -2010,7 +2034,6 @@ function toggleTheme() {
     localStorage.setItem('hw6_theme', dark ? 'dark' : 'light');
     themeToggle.innerHTML = dark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
 }
-
 function toggleAdmin() {
     if (isSuperAdmin) {
         isSuperAdmin = false;
@@ -2020,9 +2043,7 @@ function toggleAdmin() {
     }
     const pass = prompt('Введите пароль суперадмина:');
     if (pass === ADMIN_PASSWORD) {
-        isSuperAdmin = true;
-        isAdmin = true;
-        isDeputy = true;
+        isSuperAdmin = true; isAdmin = true; isDeputy = true;
         sessionStorage.setItem('hw6_superadmin', 'true');
         updateRoleFlags();
         addLog('Вход в админку', 'Суперадмин вошёл');
@@ -2031,7 +2052,6 @@ function toggleAdmin() {
         alert('Неверный пароль');
     }
 }
-
 function toggleChat() {
     chatModal.classList.toggle('active');
     if (chatModal.classList.contains('active')) {
@@ -2061,7 +2081,6 @@ function toggleChat() {
         if (badge) badge.style.display = 'none';
     }
 }
-
 function clearChat() {
     if (!isSuperAdmin && !isDeputy) return;
     if (confirm('Очистить весь чат?')) {
@@ -2072,19 +2091,14 @@ function clearChat() {
         });
     }
 }
-
 function toggleSupport() {
     supportModal.classList.toggle('active');
     if (supportModal.classList.contains('active')) loadSupportMessages();
 }
-
 function resetFilters() {
-    dayFilter.value = 'all';
-    subjectFilter.value = 'all';
-    archiveFilter.value = 'active';
+    dayFilter.value = 'all'; subjectFilter.value = 'all'; archiveFilter.value = 'active';
     render();
 }
-
 function openModal(title, task) {
     modalTitle.textContent = title;
     if (task) {
@@ -2110,36 +2124,25 @@ function openModal(title, task) {
     }
     modalOverlay.classList.add('active');
 }
-
-function closeModal() {
-    modalOverlay.classList.remove('active');
-    editingId = null;
-}
-
+function closeModal() { modalOverlay.classList.remove('active'); editingId = null; }
 function openEditModal(id) {
     const task = tasks.find(t => t.id === id);
     if (!task) return;
     if (!isAdmin && task.author !== currentUser) { alert('Вы не можете редактировать чужое задание'); return; }
     openModal('Редактировать задание', task);
 }
-
 function addAdminFromBlock() {
     if (!isSuperAdmin) return;
     const name = newAdminNameBlock.value.trim();
     const role = newAdminRoleBlock.value;
     if (!name) return;
-    if (role === 'superadmin') {
-        superadminRef.set(name);
-    } else if (role === 'deputy') {
-        deputiesRef.push(name);
-    } else {
-        adminsRef.push(name);
-    }
+    if (role === 'superadmin') superadminRef.set(name);
+    else if (role === 'deputy') deputiesRef.push(name);
+    else adminsRef.push(name);
     newAdminNameBlock.value = '';
     loadAdminsListBlock();
     loadAdminListBlock();
 }
-
 function applyAuditFilter() {
     const user = document.getElementById('auditUserFilter').value.trim().toLowerCase();
     const type = document.getElementById('auditTypeFilter').value;
@@ -2147,10 +2150,7 @@ function applyAuditFilter() {
     let logs = allLogs;
     if (user) logs = logs.filter(log => (log.user || '').toLowerCase().includes(user));
     if (type !== 'all') logs = logs.filter(log => log.type === type);
-    if (!logs.length) {
-        container.innerHTML = '<div style="padding:0.4rem;color:#6a7a9a;text-align:center;">Нет записей</div>';
-        return;
-    }
+    if (!logs.length) { container.innerHTML = '<div style="padding:0.4rem;color:#6a7a9a;text-align:center;">Нет записей</div>'; return; }
     container.innerHTML = logs.map(log => {
         const time = new Date(log.timestamp).toLocaleString('ru', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
         return `<div class="log-entry"><span class="log-time">[${time}]</span> <span class="log-user">${filterBadWords(log.user)}</span> <span class="log-action">${filterBadWords(log.action)}</span> ${log.details ? '<span style="color:#8a8aa0;">'+filterBadWords(log.details)+'</span>' : ''}</div>`;
