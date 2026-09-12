@@ -222,24 +222,16 @@
             #adminsBlock .admin-actions .row { flex-direction:column; }
             #adminsBlock .admin-actions .row input, #adminsBlock .admin-actions .row select { width:100%; }
         }
-        /* Дополнительные стили для читаемости в белой теме */
         body:not(.dark) .modal-content,
         body:not(.dark) .modal-content input,
         body:not(.dark) .modal-content textarea,
-        body:not(.dark) .modal-content select {
-            color: #1a1a2e;
-        }
+        body:not(.dark) .modal-content select { color: #1a1a2e; }
         body:not(.dark) .author-name,
         body:not(.dark) .task-text,
         body:not(.dark) .task-subject,
-        body:not(.dark) .task-date {
-            color: #1a1a2e;
-        }
+        body:not(.dark) .task-date { color: #1a1a2e; }
         body:not(.dark) .admin-panel,
-        body:not(.dark) .admin-panel .form-group label {
-            color: #1a1a2e;
-        }
-        /* Стили для профиля */
+        body:not(.dark) .admin-panel .form-group label { color: #1a1a2e; }
         .profile-avatar-option {
             display:inline-flex; align-items:center; justify-content:center;
             width:40px; height:40px; font-size:24px; border-radius:50%;
@@ -248,7 +240,6 @@
         }
         .profile-avatar-option.selected { border-color:#1a73e8; background:#e8f0fe; }
         .profile-avatar-option:hover { transform:scale(1.1); }
-        /* Исправление для тёмной темы */
         body.dark .modal-content,
         body.dark .modal-content input,
         body.dark .modal-content textarea,
@@ -273,47 +264,25 @@
         body.dark .support-msg .msg-author {
             color: #eaeef5;
         }
-        body.dark .card {
-            color: #eaeef5;
-        }
+        body.dark .card { color: #eaeef5; }
         body.dark .admin-panel .stat-table th,
         body.dark .admin-panel .stat-table td {
             color: #eaeef5;
             border-color: #2a2a40;
         }
-        body.dark .btn {
-            color: #eaeef5;
-        }
-        body.dark .btn-outline:hover {
-            background: #2a2a40;
-            color: #ffffff;
-        }
-        body.dark .profile-avatar-option {
-            color: #eaeef5;
-            border-color: #3a4a6a;
-        }
-        body.dark .profile-avatar-option.selected {
-            background: #1a73e8;
-            color: #fff;
-            border-color: #1a73e8;
-        }
-        body.dark #profileContent a {
-            color: #8ab4ff;
-        }
-        body.dark #profileContent div[style*="background:#f0f2f5"] {
-            background: #1e1e2e !important;
-            color: #eaeef5;
-        }
-        /* Стиль для кнопки выхода из impersonation */
+        body.dark .btn { color: #eaeef5; }
+        body.dark .btn-outline:hover { background: #2a2a40; color: #ffffff; }
+        body.dark .profile-avatar-option { color: #eaeef5; border-color: #3a4a6a; }
+        body.dark .profile-avatar-option.selected { background: #1a73e8; color: #fff; border-color: #1a73e8; }
+        body.dark #profileContent a { color: #8ab4ff; }
+        body.dark #profileContent div[style*="background:#f0f2f5"] { background: #1e1e2e !important; color: #eaeef5; }
         #exitImpersonationBtn {
             background: #f0b400;
             color: #1a1a2e;
             border: 1px solid #f0b400;
             font-weight: 600;
         }
-        #exitImpersonationBtn:hover {
-            background: #e0a800;
-        }
+        #exitImpersonationBtn:hover { background: #e0a800; }
     </style>
 </head>
 <body>
@@ -644,7 +613,8 @@ const firebaseConfig = {
 };
 const BOT_TOKEN = '8274411877:AAE94dt9DOFLXxuer5XSCpch3sZzNkj61UM';
 const CHAT_ID = '-1002883795807';
-const TELEGRAM_API_URL = 'https://tg.i-c-a.su/bot' + BOT_TOKEN + '/sendMessage';
+const TELEGRAM_API_URL = 'https://tg.i-c-a.su/bot' + BOT_TOKEN + 'sendMessage';
+const SUPERADMIN_HASH = 'b03752bea8c6fd1edfda61431871bc3d469928e35b657893319488a51888019e';
 
 // ----------------------- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ -----------------------
 let tasks = [];
@@ -671,8 +641,7 @@ let experimental = { anonymizeTasks: false, anonymousLikes: false, nightChat: fa
 let activityChartInstance = null;
 let subjectsChartInstance = null;
 let superadminName = 'Костя Касьянов';
-const ADMIN_PASSWORD = 'tl132435534231t';
-let userProfiles = {}; // { userName: { avatar: '👤', bio: '', telegram: '', max: '' } }
+let userProfiles = {};
 
 // DOM-элементы
 const taskListEl = document.getElementById('taskList');
@@ -749,6 +718,12 @@ const taskTemplatesRef = db.ref('taskTemplates');
 const taskHistoryRef = db.ref('taskHistory');
 const usedNamesRef = db.ref('usedNames');
 const usersRef = db.ref('users');
+
+// ----------------------- SHA-256 ХЕШ -----------------------
+async function sha256Hex(str) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+    return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
 
 // ----------------------- COOKIE ФУНКЦИИ -----------------------
 function setCookie(name, value, days) {
@@ -891,7 +866,7 @@ function checkNameAvailability(name, callback) {
     usedNamesRef.orderByValue().equalTo(name).once('value', snapshot => callback(snapshot.exists()));
 }
 function updateRoleFlags() {
-    isSuperAdmin = sessionStorage.getItem('hw6_superadmin') === 'true' || (currentUser && (superadminName === currentUser));
+    isSuperAdmin = sessionStorage.getItem('hw6_superadmin') === 'true';
     if (isSuperAdmin) { isAdmin = true; isDeputy = true; isModerator = true; }
     else {
         isDeputy = deputyUsers.includes(currentUser);
@@ -908,19 +883,16 @@ function impersonateUser(targetUser) {
     if (!isSuperAdmin) return;
     if (!confirm(`Войти в аккаунт пользователя "${targetUser}"? Вы будете действовать от его имени.`)) return;
 
-    // Сохраняем оригинального суперадмина (если ещё не сохранён)
     const originalSuperadmin = sessionStorage.getItem('hw6_original_superadmin');
     if (!originalSuperadmin) {
         sessionStorage.setItem('hw6_original_superadmin', currentUser);
     }
 
-    // Меняем пользователя
     currentUser = targetUser;
     formAuthor.value = currentUser;
     try { localStorage.setItem('hw6_userName', currentUser); } catch(e) {}
     setCookie('hw6_userName', currentUser, 365);
 
-    // Сбрасываем суперадмин-сессию
     sessionStorage.removeItem('hw6_superadmin');
     updateRoleFlags();
     profileModal.classList.remove('active');
@@ -939,7 +911,6 @@ function updateImpersonationButton() {
     }
 }
 
-// Обработчик кнопки выхода из impersonation
 if (exitImpersonationBtn) {
     exitImpersonationBtn.addEventListener('click', () => {
         const originalSuperadmin = sessionStorage.getItem('hw6_original_superadmin');
@@ -949,7 +920,7 @@ if (exitImpersonationBtn) {
             try { localStorage.setItem('hw6_userName', currentUser); } catch(e) {}
             setCookie('hw6_userName', currentUser, 365);
             sessionStorage.removeItem('hw6_original_superadmin');
-            sessionStorage.setItem('hw6_superadmin', 'true'); // восстанавливаем суперадмин-режим
+            sessionStorage.setItem('hw6_superadmin', 'true');
             updateRoleFlags();
             render();
             showNotification(`✅ Вы вернулись в свой аккаунт (${originalSuperadmin})`, 3000);
@@ -1218,11 +1189,10 @@ function render() {
     });
 }
 
-// ----------------------- ПРОФИЛЬ (исправлено) -----------------------
+// ----------------------- ПРОФИЛЬ -----------------------
 function openUserProfile(userName) {
     const isOwnProfile = (userName === currentUser);
     const profile = userProfiles[userName] || { avatar: '👤', bio: '', telegram: '', max: '' };
-    // Исправлено: определяем роль по имени пользователя, а не по статусу текущего
     let role = 'Ученик';
     if (userName === superadminName) role = 'Суперадмин';
     else if (deputyUsers.includes(userName)) role = 'Зам суперадмина';
@@ -1251,7 +1221,6 @@ function openUserProfile(userName) {
             ${profile.max ? `<div>💬 MAX: <a href="${profile.max}" target="_blank">${profile.max}</a></div>` : ''}
         </div>
     `;
-    // Кнопки для редактирования и входа в аккаунт
     let buttonsHtml = '';
     if (isOwnProfile) {
         buttonsHtml += `<button class="btn btn-primary btn-sm" id="editProfileBtn"><i class="fas fa-edit"></i> Редактировать</button>`;
@@ -1266,7 +1235,6 @@ function openUserProfile(userName) {
     profileContent.innerHTML = html;
     profileModal.classList.add('active');
 
-    // Обработчики
     if (isOwnProfile) {
         document.getElementById('editProfileBtn').addEventListener('click', () => {
             openEditProfile();
@@ -2126,28 +2094,38 @@ function toggleTheme() {
     localStorage.setItem('hw6_theme', dark ? 'dark' : 'light');
     themeToggle.innerHTML = dark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
 }
-function toggleAdmin() {
+
+// ⚠️ ГЛАВНАЯ ФУНКЦИЯ: проверка пароля через SHA-256 хеш (в коде)
+async function toggleAdmin() {
     if (isSuperAdmin) {
         isSuperAdmin = false;
         sessionStorage.removeItem('hw6_superadmin');
         sessionStorage.removeItem('hw6_original_superadmin');
         updateRoleFlags();
         updateImpersonationButton();
+        showNotification('Режим суперадмина выключен', 2000);
         return;
     }
+
     const pass = prompt('Введите пароль суперадмина:');
-    if (pass === ADMIN_PASSWORD) {
-        isSuperAdmin = true; isAdmin = true; isDeputy = true;
+    if (!pass) return;
+
+    const inputHash = await sha256Hex(pass);
+    if (inputHash === SUPERADMIN_HASH) {
+        isSuperAdmin = true;
+        isAdmin = true;
+        isDeputy = true;
         sessionStorage.setItem('hw6_superadmin', 'true');
         sessionStorage.removeItem('hw6_original_superadmin');
         updateRoleFlags();
-        addLog('Вход в админку', 'Суперадмин вошёл');
+        addLog('Вход в админку', 'Суперадмин вошёл по паролю');
         showNotification('✅ Режим суперадмина активирован', 3000);
         updateImpersonationButton();
     } else {
-        alert('Неверный пароль');
+        alert('❌ Неверный пароль');
     }
 }
+
 function toggleChat() {
     chatModal.classList.toggle('active');
     if (chatModal.classList.contains('active')) {
